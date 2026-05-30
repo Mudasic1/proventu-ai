@@ -1,0 +1,46 @@
+import "server-only";
+
+import { z } from "zod";
+
+const serverEnvSchema = z
+  .object({
+    DATABASE_URI: z.string().url().startsWith("postgresql://"),
+    BETTER_AUTH_SECRET: z.string().min(1),
+    BETTER_AUTH_URL: z.string().url(),
+    AUTH_EMAIL_WEBHOOK_URL: z.string().url().optional(),
+    AUTH_EMAIL_WEBHOOK_SECRET: z.string().min(1).optional(),
+    NODE_ENV: z
+      .enum(["development", "test", "production"])
+      .default("development"),
+  })
+  .superRefine((env, context) => {
+    if (env.NODE_ENV === "production" && env.BETTER_AUTH_SECRET.length < 32) {
+      context.addIssue({
+        code: "custom",
+        path: ["BETTER_AUTH_SECRET"],
+        message: "BETTER_AUTH_SECRET must be at least 32 characters in production.",
+      });
+    }
+
+    if (
+      env.NODE_ENV === "production" &&
+      (!env.AUTH_EMAIL_WEBHOOK_URL || !env.AUTH_EMAIL_WEBHOOK_SECRET)
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["AUTH_EMAIL_WEBHOOK_URL"],
+        message:
+          "Configure AUTH_EMAIL_WEBHOOK_URL and AUTH_EMAIL_WEBHOOK_SECRET in production.",
+      });
+    }
+  });
+
+export const serverEnv = serverEnvSchema.parse({
+  DATABASE_URI: process.env.DATABASE_URI,
+  BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+  BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+  AUTH_EMAIL_WEBHOOK_URL: process.env.AUTH_EMAIL_WEBHOOK_URL || undefined,
+  AUTH_EMAIL_WEBHOOK_SECRET:
+    process.env.AUTH_EMAIL_WEBHOOK_SECRET || undefined,
+  NODE_ENV: process.env.NODE_ENV,
+});

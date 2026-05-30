@@ -1,548 +1,360 @@
-"use client";
-
-import { FormEvent, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import Link from "next/link";
 import {
   ArrowRight,
-  BarChart3,
+  BadgeCheck,
+  Bot,
   Check,
   ChevronRight,
-  Clock3,
-  MailCheck,
-  Play,
+  CircleCheck,
+  Megaphone,
+  MessagesSquare,
+  Send,
   ShieldCheck,
   Sparkles,
   Target,
-  Zap,
+  Workflow,
 } from "lucide-react";
 
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-
-type PreviewKey = "campaign" | "pipeline" | "followups";
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 28 },
-  visible: { opacity: 1, y: 0 },
-};
-
-const previewTabs: Record<
-  PreviewKey,
-  {
-    label: string;
-    title: string;
-    description: string;
-    score: string;
-    action: string;
-    rows: Array<{ title: string; detail: string; tone: string }>;
-  }
-> = {
-  campaign: {
-    label: "Campaign",
-    title: "Launch a full campaign from one offer",
-    description:
-      "Turn one service, product, or promotion into posts, emails, and review-ready follow-up tasks.",
-    score: "14 drafts",
-    action: "Approve campaign plan",
-    rows: [
-      {
-        title: "LinkedIn launch post",
-        detail: "Written in your brand voice",
-        tone: "bg-emerald-300",
-      },
-      {
-        title: "3-email sales sequence",
-        detail: "Personalized for warm leads",
-        tone: "bg-cyan-300",
-      },
-      {
-        title: "Proposal follow-up task",
-        detail: "Ready for owner approval",
-        tone: "bg-violet-300",
-      },
-    ],
-  },
-  pipeline: {
-    label: "Pipeline",
-    title: "See which deals need attention today",
-    description:
-      "Spot stale opportunities, high-intent buyers, proposal viewers, and deals at risk before momentum disappears.",
-    score: "$48.2k",
-    action: "Review revenue risks",
-    rows: [
-      {
-        title: "Pricing lead opened twice",
-        detail: "Suggested call today",
-        tone: "bg-emerald-300",
-      },
-      {
-        title: "Proposal idle for 7 days",
-        detail: "Draft follow-up ready",
-        tone: "bg-amber-300",
-      },
-      {
-        title: "3 meetings likely this week",
-        detail: "Prioritized by buyer intent",
-        tone: "bg-cyan-300",
-      },
-    ],
-  },
-  followups: {
-    label: "Follow-ups",
-    title: "Reply faster without sounding generic",
-    description:
-      "Summarize recent activity, objections, and context into concise messages your team can review.",
-    score: "8 replies",
-    action: "Review suggested replies",
-    rows: [
-      {
-        title: "Answer pricing question",
-        detail: "Includes two meeting options",
-        tone: "bg-emerald-300",
-      },
-      {
-        title: "Handle timing objection",
-        detail: "Helpful, short, and low pressure",
-        tone: "bg-rose-300",
-      },
-      {
-        title: "Create no-reply reminder",
-        detail: "Follow up in 3 business days",
-        tone: "bg-violet-300",
-      },
-    ],
-  },
-};
+import { Button } from "@/components/ui/button";
+import { RevenuePreview } from "@/components/marketing/revenue-preview";
 
 const outcomes = [
   {
-    icon: Clock3,
-    title: "Save hours every week",
-    copy: "Campaign prep, lead review, follow-up writing, and daily prioritization happen before the team starts guessing.",
+    icon: Target,
+    number: "01",
+    title: "Know where revenue is hiding.",
+    copy: "See the warm leads, stale deals, and overdue follow-ups that deserve your attention today.",
   },
   {
-    icon: Target,
-    title: "Focus on buyers ready now",
-    copy: "Intent signals and deal context turn a messy lead list into a clear ranked plan for today.",
+    icon: Megaphone,
+    number: "02",
+    title: "Turn one offer into a campaign.",
+    copy: "Get social posts, email drafts, and a clear campaign angle prepared in your brand voice.",
   },
   {
     icon: ShieldCheck,
-    title: "Stay in control",
-    copy: "Posts, emails, and customer replies stay in review until a person approves them.",
+    number: "03",
+    title: "Move fast without losing control.",
+    copy: "Review every customer-facing action before it goes live. Automation stays useful and supervised.",
   },
 ];
 
-const steps = [
-  "Add your business, offer, and contacts.",
-  "SalesEasyAI prepares campaign ideas, lead scores, and follow-ups.",
-  "Your team reviews, approves, and moves revenue work forward.",
+const executionSteps = [
+  {
+    icon: Sparkles,
+    title: "Add the business context",
+    copy: "Bring your offer, audience, and contacts. Your workspace learns what you sell and who needs it.",
+  },
+  {
+    icon: Bot,
+    title: "Let the work arrive prepared",
+    copy: "Campaign ideas, follow-up drafts, and the next best actions show up as a focused daily plan.",
+  },
+  {
+    icon: BadgeCheck,
+    title: "Approve the moves that matter",
+    copy: "Your team reviews the work, sends the right messages, and keeps every deal moving forward.",
+  },
 ];
 
-const trustStats = [
-  { label: "weekly revenue actions", value: "120+" },
-  { label: "draft approval rate", value: "84%" },
-  { label: "hours saved per team", value: "10+" },
+const revenueLoop = [
+  "Lead scoring",
+  "Campaign planning",
+  "Social drafts",
+  "Email follow-ups",
+  "Pipeline clarity",
+  "Approval queue",
 ];
+
+function BrandMark() {
+  return (
+    <span className="relative flex size-9 items-center justify-center rounded-[13px] bg-[#d8ff62] text-[#10211c] shadow-[0_0_36px_rgba(216,255,98,0.2)]">
+      <span className="absolute inset-[5px] rounded-[9px] border border-[#10211c]/15" />
+      <Sparkles className="relative size-4" strokeWidth={2.4} />
+    </span>
+  );
+}
 
 export default function Home() {
-  const [activePreview, setActivePreview] = useState<PreviewKey>("campaign");
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const preview = previewTabs[activePreview];
-
-  const progressLabel = useMemo(() => {
-    const labels = {
-      campaign: "Campaign plan is ready for review",
-      pipeline: "Revenue risks are ranked by urgency",
-      followups: "Reply drafts are waiting for approval",
-    };
-
-    return labels[activePreview];
-  }, [activePreview]);
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (email.trim()) {
-      setSubmitted(true);
-    }
-  }
-
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#050507] font-sans text-white">
-      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_20%_10%,rgba(16,185,129,0.22),transparent_32%),radial-gradient(circle_at_80%_0%,rgba(34,211,238,0.16),transparent_34%),linear-gradient(180deg,#050507_0%,#0b0f14_45%,#050507_100%)]" />
+    <main className="min-h-screen overflow-hidden bg-[#07110f] text-[#f4f2ea]">
+      <div className="ambient-grid pointer-events-none fixed inset-0 z-0 opacity-70" />
 
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050507]/72 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
-          <a
-            href="#"
-            className="flex items-center gap-3 text-white"
+      <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:px-6">
+        <nav
+          aria-label="Main navigation"
+          className="mx-auto flex h-16 max-w-7xl items-center justify-between rounded-[20px] border border-white/[0.09] bg-[#07110f]/78 px-3 shadow-[0_16px_60px_rgba(0,0,0,0.24)] backdrop-blur-xl sm:px-4"
+        >
+          <Link
+            href="/"
             aria-label="SalesEasyAI home"
+            className="flex items-center gap-2.5 rounded-xl px-1 py-1"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-zinc-950 shadow-[0_0_34px_rgba(255,255,255,0.18)]">
-              <Sparkles className="h-4 w-4" />
+            <BrandMark />
+            <span className="font-display text-[17px] font-bold tracking-[-0.06em]">
+              SalesEasy<span className="text-[#d8ff62]">AI</span>
             </span>
-            <span className="text-lg font-semibold tracking-tight">
-              SalesEasyAI
-            </span>
-          </a>
+          </Link>
 
-          <div className="flex items-center gap-2">
-            <a
-              href="/signin"
-              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="rounded-full px-3 font-semibold text-[#d5ddd9] hover:bg-white/[0.08] hover:text-white"
             >
-              Sign in
-            </a>
-            <a
-              href="/signup"
-              className={cn(buttonVariants({ variant: "default", size: "sm" }))}
+              <Link href="/signin">Log in</Link>
+            </Button>
+            <Button
+              asChild
+              size="sm"
+              className="rounded-full bg-[#d8ff62] px-4 font-bold text-[#10211c] shadow-[0_0_24px_rgba(216,255,98,0.12)] hover:bg-[#e5ff92]"
             >
-              Sign up
-            </a>
+              <Link href="/signup">Get started</Link>
+            </Button>
           </div>
-        </div>
+        </nav>
       </header>
 
-      <section className="px-5 pb-20 pt-20 sm:px-8 lg:pb-28 lg:pt-28">
-        <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            transition={{ duration: 0.7, ease: "easeOut" }}
-            variants={fadeUp}
-          >
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-300/25 bg-emerald-300/10 px-4 py-2 text-sm font-medium text-emerald-100">
-              <Zap className="h-4 w-4" />
-              For small teams that need more revenue work done
-            </div>
+      <section className="relative z-10 px-5 pb-20 pt-36 sm:px-7 sm:pt-44 lg:pb-28">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid items-center gap-14 lg:grid-cols-[1.02fr_0.98fr] lg:gap-12">
+            <div className="hero-copy">
+              <div className="eyebrow-pill">
+                <span className="size-1.5 rounded-full bg-[#d8ff62] shadow-[0_0_16px_#d8ff62]" />
+                Revenue work, ready for review
+              </div>
 
-            <h1 className="max-w-5xl text-5xl font-semibold leading-[0.98] tracking-[-0.03em] text-white sm:text-6xl lg:text-7xl">
-              Turn leads into campaigns, follow-ups, and booked calls.
-            </h1>
+              <h1 className="mt-7 max-w-[850px] font-display text-[clamp(4.2rem,9.2vw,8.3rem)] font-bold leading-[0.84] tracking-[-0.105em] text-[#f4f2ea]">
+                Your sales day,
+                <span className="block text-[#d8ff62]">already moving.</span>
+              </h1>
 
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-300 sm:text-xl">
-              Plan content, organize contacts, draft emails, spot the best
-              opportunities, and move your sales day forward without a bigger
-              team.
-            </p>
+              <p className="mt-7 max-w-xl text-base leading-7 text-[#b5c2bd] sm:text-lg sm:leading-8">
+                Turn your offer and lead list into campaigns, clear priorities,
+                and follow-ups your team can approve before the day gets busy.
+              </p>
 
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <a
-                href="/signup"
-                className={cn(buttonVariants({ variant: "accent", size: "lg" }))}
-              >
-                Sign up free
-                <ArrowRight className="h-4 w-4" />
-              </a>
-              <Button
-                type="button"
-                variant="outline"
-                size="lg"
-                onClick={() => setActivePreview("followups")}
-              >
-                <Play className="h-4 w-4" />
-                Preview workflow
-              </Button>
-            </div>
-
-            <div className="mt-8 grid max-w-xl grid-cols-3 gap-3">
-              {trustStats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="rounded-2xl border border-white/10 bg-white/[0.04] p-3"
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <Button
+                  asChild
+                  size="lg"
+                  className="h-12 rounded-full bg-[#d8ff62] px-6 font-bold text-[#10211c] shadow-[0_12px_40px_rgba(216,255,98,0.13)] hover:-translate-y-0.5 hover:bg-[#e5ff92]"
                 >
-                  <p className="text-xl font-semibold text-white">
-                    {stat.value}
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-zinc-500">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: 24 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.12, ease: "easeOut" }}
-          >
-            <Card className="relative overflow-hidden rounded-[32px] border-white/12 bg-white/[0.07] p-3">
-              <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/70 to-transparent" />
-              <CardContent className="rounded-[24px] border border-white/10 bg-zinc-950/80 p-4">
-                <div className="flex flex-col gap-4 border-b border-white/10 pb-5 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-zinc-500">
-                      Revenue workspace
-                    </p>
-                    <h2 className="mt-1 text-2xl font-semibold tracking-tight">
-                      Today&apos;s execution plan
-                    </h2>
-                  </div>
-                  <div className="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-4 py-2 text-sm font-semibold text-emerald-200">
-                    {progressLabel}
-                  </div>
-                </div>
-
-                <div className="mt-4 grid gap-2 rounded-[22px] border border-white/10 bg-white/[0.03] p-2 sm:grid-cols-3">
-                  {(Object.keys(previewTabs) as PreviewKey[]).map((key) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setActivePreview(key)}
-                      className={cn(
-                        "rounded-2xl px-4 py-3 text-left text-sm font-semibold transition-all",
-                        activePreview === key
-                          ? "bg-white text-zinc-950 shadow-lg shadow-white/10"
-                          : "text-zinc-400 hover:bg-white/10 hover:text-white",
-                      )}
-                    >
-                      {previewTabs[key].label}
-                    </button>
-                  ))}
-                </div>
-
-                <motion.div
-                  key={activePreview}
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35 }}
-                  className="mt-5 grid gap-5 lg:grid-cols-[0.86fr_1.14fr]"
+                  <Link href="/signup">
+                    Start moving revenue
+                    <ArrowRight data-icon="inline-end" className="size-4" />
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="h-12 rounded-full border-white/[0.13] bg-white/[0.035] px-6 font-semibold text-[#eef2ed] hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.08] hover:text-white"
                 >
-                  <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-5">
-                    <div className="mb-8 flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-300 text-zinc-950">
-                      <BarChart3 className="h-5 w-5" />
-                    </div>
-                    <p className="text-sm font-medium text-zinc-500">
-                      Active preview
-                    </p>
-                    <h3 className="mt-2 text-2xl font-semibold tracking-tight">
-                      {preview.title}
-                    </h3>
-                    <p className="mt-3 text-sm leading-6 text-zinc-400">
-                      {preview.description}
-                    </p>
-                    <div className="mt-6 rounded-2xl bg-white p-4 text-zinc-950">
-                      <p className="text-sm font-medium text-zinc-500">
-                        Prepared output
-                      </p>
-                      <p className="mt-1 text-3xl font-semibold">
-                        {preview.score}
-                      </p>
-                    </div>
-                  </div>
+                  <Link href="#how-it-works">
+                    See how it works
+                    <ChevronRight data-icon="inline-end" className="size-4" />
+                  </Link>
+                </Button>
+              </div>
 
-                  <div className="space-y-3">
-                    {preview.rows.map((row, index) => (
-                      <motion.div
-                        key={row.title}
-                        initial={{ opacity: 0, x: 18 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.35, delay: index * 0.08 }}
-                        className="flex items-center gap-4 rounded-[22px] border border-white/10 bg-zinc-900/80 p-4"
-                      >
-                        <span
-                          className={cn(
-                            "h-3 w-3 rounded-full shadow-[0_0_24px_currentColor]",
-                            row.tone,
-                          )}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-white">{row.title}</p>
-                          <p className="mt-1 text-sm text-zinc-500">
-                            {row.detail}
-                          </p>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-zinc-600" />
-                      </motion.div>
-                    ))}
+              <div className="mt-10 flex flex-wrap gap-x-5 gap-y-2.5 text-xs font-bold uppercase tracking-[0.13em] text-[#8f9f99]">
+                {["Human approved", "Revenue focused", "Built for small teams"].map(
+                  (item) => (
+                    <span key={item} className="flex items-center gap-2">
+                      <CircleCheck className="size-3.5 text-[#d8ff62]" />
+                      {item}
+                    </span>
+                  ),
+                )}
+              </div>
+            </div>
 
-                    <div className="rounded-[22px] border border-emerald-300/25 bg-emerald-300/10 p-4">
-                      <p className="text-sm font-medium text-emerald-200">
-                        Recommended next step
-                      </p>
-                      <p className="mt-2 font-semibold text-white">
-                        {preview.action}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              </CardContent>
-            </Card>
-          </motion.div>
+            <div className="hero-preview relative lg:-mr-14">
+              <div className="absolute -left-10 -top-12 size-56 rounded-full bg-[#d8ff62]/10 blur-[90px]" />
+              <div className="absolute -bottom-8 right-4 size-52 rounded-full bg-[#5de1c1]/10 blur-[90px]" />
+              <RevenuePreview />
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="px-5 py-20 sm:px-8 lg:py-28">
-        <div className="mx-auto max-w-7xl">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.35 }}
-            transition={{ duration: 0.6 }}
-            variants={fadeUp}
-            className="mx-auto max-w-3xl text-center"
-          >
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-300">
-              The difference users feel
-            </p>
-            <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-[-0.025em] sm:text-5xl">
-              Less admin. More conversations that move revenue.
-            </h2>
-          </motion.div>
+      <section
+        aria-label="Revenue workflow capabilities"
+        className="relative z-10 overflow-hidden border-y border-white/[0.08] bg-white/[0.025] py-4"
+      >
+        <div className="revenue-marquee flex w-max items-center gap-7 whitespace-nowrap">
+          {[...revenueLoop, ...revenueLoop].map((item, index) => (
+            <div
+              key={`${item}-${index}`}
+              className="flex items-center gap-7 text-[11px] font-extrabold uppercase tracking-[0.2em] text-[#b6c3be]"
+            >
+              {item}
+              <Sparkles className="size-3.5 text-[#d8ff62]" />
+            </div>
+          ))}
+        </div>
+      </section>
 
-          <div className="mt-12 grid gap-5 lg:grid-cols-3">
-            {outcomes.map((item, index) => {
-              const Icon = item.icon;
+      <section className="relative z-10 px-5 py-24 sm:px-7 lg:py-32">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:gap-20">
+            <div>
+              <p className="section-kicker">One clear workspace</p>
+              <h2 className="mt-5 max-w-md font-display text-5xl font-bold leading-[0.92] tracking-[-0.085em] text-[#f4f2ea] sm:text-6xl">
+                Make the next move obvious.
+              </h2>
+              <p className="mt-6 max-w-md leading-7 text-[#98a8a2]">
+                Stop piecing together your sales day from scattered notes,
+                half-finished drafts, and deals that went quiet.
+              </p>
+            </div>
+
+            <div className="grid gap-3">
+              {outcomes.map((outcome) => {
+                const Icon = outcome.icon;
+
+                return (
+                  <article
+                    key={outcome.number}
+                    className="group grid gap-4 rounded-[24px] border border-white/[0.09] bg-[#0b1916]/80 p-5 transition duration-300 hover:-translate-y-1 hover:border-[#d8ff62]/35 hover:bg-[#0f201c] sm:grid-cols-[56px_1fr_auto] sm:items-center sm:p-6"
+                  >
+                    <div className="flex size-14 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.045] text-[#d8ff62] transition duration-300 group-hover:bg-[#d8ff62] group-hover:text-[#10211c]">
+                      <Icon className="size-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-display text-xl font-bold tracking-[-0.05em] text-[#f4f2ea] sm:text-2xl">
+                        {outcome.title}
+                      </h3>
+                      <p className="mt-2 max-w-2xl text-sm leading-6 text-[#98a8a2]">
+                        {outcome.copy}
+                      </p>
+                    </div>
+                    <span className="hidden font-display text-3xl font-bold tracking-[-0.08em] text-white/[0.14] sm:block">
+                      {outcome.number}
+                    </span>
+                  </article>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="how-it-works"
+        className="relative z-10 border-y border-white/[0.08] bg-[#0a1714] px-5 py-24 sm:px-7 lg:py-32"
+      >
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-3xl">
+            <p className="section-kicker">A calmer way to grow</p>
+            <h2 className="mt-5 font-display text-5xl font-bold leading-[0.92] tracking-[-0.085em] text-[#f4f2ea] sm:text-7xl">
+              Strategy in. Busywork out.
+              <span className="text-[#d8ff62]"> You approve the rest.</span>
+            </h2>
+          </div>
+
+          <div className="mt-14 grid gap-4 lg:grid-cols-3">
+            {executionSteps.map((step, index) => {
+              const Icon = step.icon;
 
               return (
-                <motion.div
-                  key={item.title}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.28 }}
-                  transition={{ duration: 0.55, delay: index * 0.08 }}
-                  variants={fadeUp}
+                <article
+                  key={step.title}
+                  className="group relative overflow-hidden rounded-[28px] border border-white/[0.09] bg-[#07110f] p-6 sm:p-7"
                 >
-                  <Card className="h-full rounded-[28px] bg-white/[0.055] transition duration-300 hover:-translate-y-1 hover:border-emerald-300/25 hover:bg-white/[0.08]">
-                    <CardContent>
-                      <div className="mb-8 flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-zinc-950">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <h3 className="text-2xl font-semibold tracking-tight">
-                        {item.title}
-                      </h3>
-                      <p className="mt-4 leading-7 text-zinc-400">{item.copy}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                  <span className="absolute right-5 top-4 font-display text-7xl font-bold tracking-[-0.14em] text-white/[0.035]">
+                    0{index + 1}
+                  </span>
+                  <div className="flex size-12 items-center justify-center rounded-2xl bg-[#d8ff62] text-[#10211c]">
+                    <Icon className="size-5" />
+                  </div>
+                  <h3 className="mt-10 max-w-xs font-display text-3xl font-bold leading-none tracking-[-0.075em] text-[#f4f2ea]">
+                    {step.title}
+                  </h3>
+                  <p className="mt-4 text-sm leading-6 text-[#98a8a2]">
+                    {step.copy}
+                  </p>
+                </article>
               );
             })}
           </div>
-        </div>
-      </section>
 
-      <section className="border-y border-white/10 bg-white/[0.03] px-5 py-20 sm:px-8 lg:py-28">
-        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.35 }}
-            transition={{ duration: 0.6 }}
-            variants={fadeUp}
-          >
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-cyan-300">
-              How it works
-            </p>
-            <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-[-0.025em] sm:text-5xl">
-              A simple rhythm for busy teams.
-            </h2>
-            <p className="mt-5 text-lg leading-8 text-zinc-400">
-              The product promise stays simple: add your business context,
-              review prepared work, and approve what should go out.
-            </p>
-          </motion.div>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+            <article className="rounded-[28px] border border-white/[0.09] bg-[#d8ff62] p-7 text-[#10211c] sm:p-8">
+              <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em]">
+                <Workflow className="size-4" />
+                The revenue loop
+              </div>
+              <p className="mt-8 max-w-2xl font-display text-4xl font-bold leading-[0.92] tracking-[-0.085em] sm:text-5xl">
+                Attract. Nurture. Close. Retain. Repeat with a smarter plan.
+              </p>
+            </article>
 
-          <div className="space-y-4">
-            {steps.map((step, index) => (
-              <motion.div
-                key={step}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.55, delay: index * 0.1 }}
-                variants={fadeUp}
-              >
-                <Card className="rounded-[26px] bg-zinc-950/70">
-                  <CardContent className="flex items-center gap-4 p-5">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-emerald-300 text-sm font-bold text-zinc-950">
-                      {index + 1}
-                    </span>
-                    <p className="text-lg font-medium text-zinc-100">{step}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
+            <article className="rounded-[28px] border border-white/[0.09] bg-white/[0.04] p-7 sm:p-8">
+              <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#d8ff62]">
+                <MessagesSquare className="size-4" />
+                Human approval stays on
+              </div>
+              <p className="mt-8 font-display text-3xl font-bold leading-[0.96] tracking-[-0.075em] text-[#f4f2ea]">
+                Your voice. Your call. Every time.
+              </p>
+            </article>
           </div>
         </div>
       </section>
 
-      <section className="px-5 py-20 sm:px-8 lg:py-28">
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.35 }}
-          transition={{ duration: 0.65 }}
-          variants={fadeUp}
-          className="mx-auto max-w-7xl overflow-hidden rounded-[34px] border border-white/10 bg-[linear-gradient(135deg,rgba(16,185,129,0.2),rgba(34,211,238,0.12),rgba(168,85,247,0.14))] p-6 shadow-2xl shadow-black/40 sm:p-10 lg:p-14"
-        >
-          <div className="grid gap-8 lg:grid-cols-[1fr_0.86fr] lg:items-center">
+      <section className="relative z-10 px-5 py-24 sm:px-7 lg:py-32">
+        <div className="mx-auto max-w-7xl overflow-hidden rounded-[30px] border border-[#d8ff62]/35 bg-[#d8ff62] px-6 py-10 text-[#10211c] shadow-[0_25px_100px_rgba(0,0,0,0.25)] sm:px-10 sm:py-12 lg:px-14">
+          <div className="grid items-end gap-8 lg:grid-cols-[1fr_auto]">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-200">
-                Start with one lead list
+              <p className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em]">
+                <Send className="size-4" />
+                Start with your next campaign
               </p>
-              <h2 className="mt-4 text-4xl font-semibold leading-tight tracking-[-0.025em] sm:text-5xl">
-                Build a sales day that tells you exactly what to do next.
+              <h2 className="mt-5 max-w-4xl font-display text-5xl font-bold leading-[0.88] tracking-[-0.09em] sm:text-7xl">
+                Put your revenue work in motion.
               </h2>
-              <p className="mt-5 max-w-2xl text-lg leading-8 text-zinc-300">
-                Bring your contacts and offer. SalesEasyAI prepares campaigns,
-                follow-ups, and priorities your team can approve before anything
-                goes out.
+              <p className="mt-5 max-w-2xl leading-7 text-[#27413a]">
+                Add your business, contacts, and offer. Walk into a workspace
+                that already knows what needs your attention next.
               </p>
             </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="rounded-[28px] border border-white/10 bg-zinc-950/75 p-5 backdrop-blur-xl"
+            <Button
+              asChild
+              size="lg"
+              className="h-13 rounded-full bg-[#10211c] px-6 font-bold text-[#f4f2ea] shadow-[0_10px_30px_rgba(16,33,28,0.18)] hover:-translate-y-0.5 hover:bg-[#1a3830]"
             >
-              <label
-                htmlFor="email"
-                className="text-sm font-semibold text-zinc-300"
-              >
-                Work email
-              </label>
-              <div className="mt-3 flex flex-col gap-3 sm:flex-row">
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(event) => {
-                    setEmail(event.target.value);
-                    setSubmitted(false);
-                  }}
-                  placeholder="you@company.com"
-                  className="h-12 min-w-0 flex-1 rounded-full border border-white/10 bg-white px-4 text-zinc-950 outline-none transition placeholder:text-zinc-500 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-300/35"
-                  required
-                />
-                <Button type="submit" variant="accent" size="lg">
-                  Sign up
-                </Button>
-              </div>
-              <div className="mt-5 flex items-center gap-3 text-sm text-zinc-500">
-                <Check className="h-4 w-4 text-emerald-300" />
-                No pressure. Start with one campaign and one follow-up queue.
-              </div>
-              {submitted && (
-                <p className="mt-4 rounded-2xl border border-emerald-300/25 bg-emerald-300/10 p-3 text-sm font-semibold text-emerald-100">
-                  You&apos;re in. We&apos;ll help you turn that lead list into a
-                  working sales rhythm.
-                </p>
-              )}
-            </form>
+              <Link href="/signup">
+                Get started free
+                <ArrowRight data-icon="inline-end" className="size-4" />
+              </Link>
+            </Button>
           </div>
-        </motion.div>
+
+          <div className="mt-10 flex flex-wrap gap-x-5 gap-y-2 border-t border-[#10211c]/15 pt-5 text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#365148]">
+            {["Set up in minutes", "Draft before send", "Stay in control"].map(
+              (item) => (
+                <span key={item} className="flex items-center gap-1.5">
+                  <Check className="size-3.5" strokeWidth={3} />
+                  {item}
+                </span>
+              ),
+            )}
+          </div>
+        </div>
       </section>
 
-      <footer className="border-t border-white/10 px-5 py-8 sm:px-8">
-        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 text-sm text-zinc-500 sm:flex-row sm:items-center">
-          <p className="font-semibold text-white">SalesEasyAI</p>
-          <p>AI-assisted sales and marketing execution for growing teams.</p>
-          <div className="flex gap-4">
-            <MailCheck className="h-4 w-4" />
-            <p>&copy; 2026 SalesEasyAI</p>
-          </div>
+      <footer className="relative z-10 border-t border-white/[0.08] px-5 py-7 sm:px-7">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 text-xs text-[#82928c] sm:flex-row sm:items-center sm:justify-between">
+          <Link href="/" className="flex items-center gap-2 font-bold text-[#d5ddd9]">
+            <BrandMark />
+            SalesEasyAI
+          </Link>
+          <p>Revenue execution for growing teams.</p>
+          <p>&copy; 2026 SalesEasyAI</p>
         </div>
       </footer>
     </main>

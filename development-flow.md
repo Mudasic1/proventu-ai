@@ -11,7 +11,7 @@
 ```txt
 /
 ├── frontend/   # Next.js app, authentication, dashboard UI, Drizzle ORM, NeonDB auth/business tables
-└── backend/    # FastAPI AI backend, OpenAI Agents SDK, SQLModel, NeonDB AI/runtime tables
+└── backend-ai/ # FastAPI AI backend, OpenAI Agents SDK, SQLModel, NeonDB AI/runtime tables
 ```
 
 ### Folder Responsibilities
@@ -19,7 +19,7 @@
 | Folder | Owns | Must Not Own |
 |---|---|---|
 | `/frontend` | UI, auth, user/workspace dashboard, server actions, route protection, client-facing CRM/product flows | AI agent orchestration internals, long-running agent execution logic |
-| `/backend` | AI agents, tool execution, agent traces, campaign generation, CRM intelligence, background AI tasks, backend APIs | Frontend session UI, visual app routing, React components |
+| `/backend-ai` | AI agents, tool execution, agent traces, campaign generation, CRM intelligence, background AI tasks, backend APIs | Frontend session UI, visual app routing, React components |
 
 ---
 
@@ -394,7 +394,7 @@ frontend/
 
 ---
 
-## 5. Backend Rules: `/backend`
+## 5. Backend Rules: `/backend-ai`
 
 ## 5.1 FastAPI Rules
 
@@ -419,7 +419,7 @@ frontend/
 Recommended pattern:
 
 ```txt
-backend/
+backend-ai/
 ├── app/
 │   ├── main.py
 │   ├── core/
