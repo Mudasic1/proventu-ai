@@ -1,0 +1,17 @@
+import { UserPlus } from "lucide-react";
+
+import { ContactForm } from "@/components/crm/contact-form";
+import { createContactAction } from "@/server/actions/contacts";
+
+export default function NewContactPage() {
+  return (
+    <section className="max-w-3xl">
+      <p className="section-kicker">CRM contacts</p>
+      <h1 className="mt-3 font-display text-5xl font-bold tracking-[-0.09em]">Add a lead worth following.</h1>
+      <div className="mt-7 rounded-[24px] border border-white/[0.09] bg-[#0b1916]/82 p-5 sm:p-7">
+        <p className="mb-6 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.15em] text-[#d8ff62]"><UserPlus className="size-4" />Contact details</p>
+        <ContactForm action={createContactAction} />
+      </div>
+    </section>
+  );
+}

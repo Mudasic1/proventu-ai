@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Manrope, Syne } from "next/font/google";
+import { Toaster } from "react-hot-toast";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -29,7 +30,19 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       className={`h-full antialiased ${manrope.variable} ${syne.variable}`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        {children}
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: "#10211c",
+              border: "1px solid rgba(216, 255, 98, 0.22)",
+              color: "#f4f2ea",
+            },
+          }}
+        />
+      </body>
     </html>
   );
 }

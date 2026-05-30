@@ -7,6 +7,8 @@
 
 **Organization**: Tasks are grouped by user story so each story can be implemented, demonstrated, and validated as an incremental vertical slice.
 
+**Current implementation scope**: The non-AI revenue workspace is being implemented first. AI agents, AI campaign generation, generated drafts, approvals, sending, publishing, scheduling, and autonomous execution remain intentionally open.
+
 ## Format: `[ID] [P?] [Story] Description`
 
 - **[P]**: Can run in parallel because it changes different files without depending on incomplete tasks
@@ -17,11 +19,11 @@
 
 **Purpose**: Establish project dependencies, configuration entry points, and test harnesses.
 
-- [ ] T001 Add frontend database, validation, authentication, testing, and CSV parsing dependencies in `frontend/package.json`
-- [ ] T002 [P] Add frontend database toolkit configuration in `frontend/drizzle.config.ts`
+- [x] T001 Add frontend database, validation, authentication, testing, and CSV parsing dependencies in `frontend/package.json`
+- [x] T002 [P] Add frontend database toolkit configuration in `frontend/drizzle.config.ts`
 - [ ] T003 [P] Add AI backend API, validation, database, settings, testing, and AI dependencies in `backend-ai/pyproject.toml`
 - [ ] T004 [P] Create AI backend package structure in `backend-ai/app/__init__.py`, `backend-ai/app/api/__init__.py`, `backend-ai/app/core/__init__.py`, `backend-ai/app/db/__init__.py`, `backend-ai/app/schemas/__init__.py`, `backend-ai/app/services/__init__.py`, `backend-ai/app/agents/__init__.py`, and `backend-ai/app/guardrails/__init__.py`
-- [ ] T005 [P] Configure frontend unit and integration test runner in `frontend/vitest.config.ts` and `frontend/tests/setup.ts`
+- [x] T005 [P] Configure frontend unit and integration test runner in `frontend/vitest.config.ts` and `frontend/tests/setup.ts`
 - [ ] T006 [P] Configure frontend browser test runner in `frontend/playwright.config.ts`
 - [ ] T007 [P] Add documented environment variable templates in `frontend/.env.example` and `backend-ai/.env.example`
 
@@ -33,14 +35,14 @@
 
 **Checkpoint**: No user story work begins until workspace authorization and shared error contracts are available.
 
-- [ ] T008 Define frontend-owned Phase 1 business tables and relationships in `frontend/drizzle/schema.ts`
-- [ ] T009 Generate the initial frontend-owned Phase 1 database migration in `frontend/drizzle/migrations/0001_phase1_revenue_workspace.sql`
-- [ ] T010 [P] Add frontend server-only environment validation in `frontend/src/lib/env/server.ts`
-- [ ] T011 [P] Add frontend database connection module in `frontend/src/lib/db/index.ts`
-- [ ] T012 [P] Add shared frontend application error types and serialization in `frontend/src/lib/errors/app-error.ts`
-- [ ] T013 Add authenticated session resolution in `frontend/src/lib/auth/session.ts`
-- [ ] T014 Add workspace membership resolution and workspace-scoped authorization helpers in `frontend/src/lib/permissions/workspace.ts`
-- [ ] T015 Add protected dashboard route guard in `frontend/src/app/(dashboard)/layout.tsx`
+- [x] T008 Define frontend-owned Phase 1 business tables and relationships in `frontend/src/lib/db/schema.ts`
+- [x] T009 Generate the initial frontend-owned Phase 1 database migration in `frontend/drizzle/0001_majestic_lucky_pierre.sql`
+- [x] T010 [P] Add frontend server-only environment validation in `frontend/src/lib/env/server.ts`
+- [x] T011 [P] Add frontend database connection module in `frontend/src/lib/db/index.ts`
+- [x] T012 [P] Add shared frontend application error types and serialization in `frontend/src/lib/errors/app-error.ts`
+- [x] T013 Add authenticated session resolution in `frontend/src/lib/auth/session.ts`
+- [x] T014 Add workspace membership resolution and workspace-scoped authorization helpers in `frontend/src/lib/permissions/workspace.ts`
+- [x] T015 Add protected dashboard route guard in `frontend/src/app/(dashboard)/layout.tsx`
 - [ ] T016 [P] Add AI backend server-only settings validation in `backend-ai/app/core/config.py`
 - [ ] T017 [P] Add AI backend database session management in `backend-ai/app/db/session.py`
 - [ ] T018 [P] Add AI backend success and error envelope schemas in `backend-ai/app/schemas/envelopes.py`
@@ -61,18 +63,18 @@
 
 ### Tests for User Story 1
 
-- [ ] T025 [P] [US1] Add onboarding validation unit tests in `frontend/tests/unit/onboarding-validation.test.ts`
+- [x] T025 [P] [US1] Add onboarding validation unit tests in `frontend/tests/unit/onboarding-validation.test.ts`
 - [ ] T026 [P] [US1] Add workspace onboarding integration tests for profile creation, membership creation, and default pipeline creation in `frontend/tests/integration/onboarding.test.ts`
 - [ ] T027 [P] [US1] Add protected-route integration tests for signed-out, incomplete-onboarding, and workspace-ready states in `frontend/tests/integration/dashboard-guard.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T028 [P] [US1] Define business profile and offer input validation in `frontend/src/lib/validations/onboarding.ts`
-- [ ] T029 [US1] Implement workspace, membership, business profile, offer, and default pipeline creation transaction in `frontend/src/server/mutations/workspaces.ts`
-- [ ] T030 [US1] Add workspace onboarding server action with predictable field errors in `frontend/src/server/actions/onboarding.ts`
-- [ ] T031 [P] [US1] Build reusable onboarding form sections in `frontend/src/components/onboarding/business-profile-form.tsx`
-- [ ] T032 [US1] Add the onboarding route and completion redirect in `frontend/src/app/onboarding/page.tsx`
-- [ ] T033 [P] [US1] Add workspace profile editing page in `frontend/src/app/(dashboard)/settings/workspace/page.tsx`
+- [x] T028 [P] [US1] Define business profile and offer input validation in `frontend/src/lib/validations/onboarding.ts`
+- [x] T029 [US1] Implement workspace, membership, business profile, offer, and default pipeline creation transaction in `frontend/src/server/mutations/workspaces.ts`
+- [x] T030 [US1] Add workspace onboarding server action with predictable field errors in `frontend/src/server/actions/onboarding.ts`
+- [x] T031 [P] [US1] Build reusable onboarding form sections in `frontend/src/components/onboarding/business-profile-form.tsx`
+- [x] T032 [US1] Add the onboarding route and completion redirect in `frontend/src/app/onboarding/page.tsx`
+- [x] T033 [P] [US1] Add workspace profile editing page in `frontend/src/app/(dashboard)/settings/workspace/page.tsx`
 
 **Checkpoint**: A signed-in first-time user has a protected, workspace-scoped product shell.
 
@@ -86,22 +88,22 @@
 
 ### Tests for User Story 2
 
-- [ ] T034 [P] [US2] Add contact validation and duplicate normalization unit tests in `frontend/tests/unit/contact-validation.test.ts`
+- [x] T034 [P] [US2] Add contact validation and duplicate normalization unit tests in `frontend/tests/unit/contact-validation.test.ts`
 - [ ] T035 [P] [US2] Add workspace-scoped contact mutation and activity integration tests in `frontend/tests/integration/contacts.test.ts`
 - [ ] T036 [P] [US2] Add contact import accepted, rejected, and duplicate row integration tests in `frontend/tests/integration/contact-import.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T037 [P] [US2] Define contact and contact-import input validation in `frontend/src/lib/validations/contacts.ts`
-- [ ] T038 [P] [US2] Add workspace-scoped contact list, search, filter, detail, and duplicate lookup queries in `frontend/src/server/queries/contacts.ts`
-- [ ] T039 [US2] Implement contact create, update, note, and confirmed removal mutations with activity entries in `frontend/src/server/mutations/contacts.ts`
-- [ ] T040 [US2] Implement structured contact import parsing and row classification in `frontend/src/server/mutations/contact-imports.ts`
-- [ ] T041 [US2] Add contact and import server actions with workspace authorization in `frontend/src/server/actions/contacts.ts`
-- [ ] T042 [P] [US2] Build contact list, filters, and empty state in `frontend/src/components/crm/contact-list.tsx`
-- [ ] T043 [P] [US2] Build contact create and edit form with duplicate warning state in `frontend/src/components/crm/contact-form.tsx`
-- [ ] T044 [P] [US2] Build contact timeline and note composer in `frontend/src/components/crm/contact-timeline.tsx`
-- [ ] T045 [P] [US2] Build structured contact import form and result summary in `frontend/src/components/crm/contact-import-form.tsx`
-- [ ] T046 [US2] Add CRM contact list, new-contact, import, and contact-detail routes in `frontend/src/app/(dashboard)/crm/contacts/page.tsx`, `frontend/src/app/(dashboard)/crm/contacts/new/page.tsx`, `frontend/src/app/(dashboard)/crm/contacts/import/page.tsx`, and `frontend/src/app/(dashboard)/crm/contacts/[contactId]/page.tsx`
+- [x] T037 [P] [US2] Define contact and contact-import input validation in `frontend/src/lib/validations/contacts.ts`
+- [x] T038 [P] [US2] Add workspace-scoped contact list, search, filter, detail, and duplicate lookup queries in `frontend/src/server/queries/contacts.ts`
+- [x] T039 [US2] Implement contact create, update, note, and confirmed removal mutations with activity entries in `frontend/src/server/mutations/contacts.ts`
+- [x] T040 [US2] Implement structured contact import parsing and row classification in `frontend/src/server/mutations/contact-imports.ts`
+- [x] T041 [US2] Add contact and import server actions with workspace authorization in `frontend/src/server/actions/contacts.ts`
+- [x] T042 [P] [US2] Build contact list, filters, and empty state in `frontend/src/components/crm/contact-list.tsx`
+- [x] T043 [P] [US2] Build contact create and edit form with duplicate warning state in `frontend/src/components/crm/contact-form.tsx`
+- [x] T044 [P] [US2] Build contact timeline and note composer in `frontend/src/components/crm/contact-timeline.tsx`
+- [x] T045 [P] [US2] Build structured contact import form and result summary in `frontend/src/components/crm/contact-import-form.tsx`
+- [x] T046 [US2] Add CRM contact list, new-contact, import, and contact-detail routes in `frontend/src/app/(dashboard)/crm/contacts/page.tsx`, `frontend/src/app/(dashboard)/crm/contacts/new/page.tsx`, `frontend/src/app/(dashboard)/crm/contacts/import/page.tsx`, and `frontend/src/app/(dashboard)/crm/contacts/[contactId]/page.tsx`
 
 **Checkpoint**: Contacts are usable as the trusted workspace-scoped revenue data source.
 
@@ -115,21 +117,21 @@
 
 ### Tests for User Story 3
 
-- [ ] T047 [P] [US3] Add deal and task validation unit tests in `frontend/tests/unit/pipeline-validation.test.ts`
+- [x] T047 [P] [US3] Add deal and task validation unit tests in `frontend/tests/unit/pipeline-validation.test.ts`
 - [ ] T048 [P] [US3] Add deal movement, won/lost outcome, activity history, and workspace isolation integration tests in `frontend/tests/integration/deals.test.ts`
 - [ ] T049 [P] [US3] Add follow-up task create, overdue, update, and completion integration tests in `frontend/tests/integration/tasks.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T050 [P] [US3] Define deal movement, deal closure, and follow-up task input validation in `frontend/src/lib/validations/pipeline.ts`
-- [ ] T051 [P] [US3] Add workspace-scoped pipeline, deal-detail, stale-deal, and task-priority queries in `frontend/src/server/queries/pipeline.ts`
-- [ ] T052 [US3] Implement deal create, update, stage movement, won closure, lost closure, and activity mutations in `frontend/src/server/mutations/deals.ts`
-- [ ] T053 [US3] Implement follow-up task create, update, and completion mutations in `frontend/src/server/mutations/tasks.ts`
-- [ ] T054 [US3] Add deal and task server actions with workspace authorization in `frontend/src/server/actions/pipeline.ts`
-- [ ] T055 [P] [US3] Build pipeline board and stage columns in `frontend/src/components/pipeline/pipeline-board.tsx`
-- [ ] T056 [P] [US3] Build deal create, edit, and closure forms in `frontend/src/components/pipeline/deal-form.tsx`
-- [ ] T057 [P] [US3] Build follow-up task list and task editor in `frontend/src/components/pipeline/task-list.tsx`
-- [ ] T058 [US3] Add pipeline board, deal-detail, and task routes in `frontend/src/app/(dashboard)/sales/pipeline/page.tsx`, `frontend/src/app/(dashboard)/sales/deals/[dealId]/page.tsx`, and `frontend/src/app/(dashboard)/sales/tasks/page.tsx`
+- [x] T050 [P] [US3] Define deal movement, deal closure, and follow-up task input validation in `frontend/src/lib/validations/pipeline.ts`
+- [x] T051 [P] [US3] Add workspace-scoped pipeline, deal-detail, stale-deal, and task-priority queries in `frontend/src/server/queries/pipeline.ts`
+- [x] T052 [US3] Implement deal creation, stage movement, won closure, lost closure, and activity mutations in `frontend/src/server/mutations/pipeline.ts`
+- [x] T053 [US3] Implement follow-up task creation and completion mutations in `frontend/src/server/mutations/pipeline.ts`
+- [x] T054 [US3] Add deal and task server actions with workspace authorization in `frontend/src/server/actions/pipeline.ts`
+- [x] T055 [P] [US3] Build pipeline board and stage columns in `frontend/src/components/pipeline/pipeline-board.tsx`
+- [x] T056 [P] [US3] Build deal creation and closure forms in `frontend/src/components/pipeline/deal-form.tsx` and `frontend/src/app/(dashboard)/sales/deals/[dealId]/page.tsx`
+- [x] T057 [P] [US3] Build follow-up task list, creation, and completion controls in `frontend/src/components/pipeline/task-list.tsx` and `frontend/src/components/pipeline/task-form.tsx`
+- [x] T058 [US3] Add pipeline board, deal-detail, and task routes in `frontend/src/app/(dashboard)/sales/pipeline/page.tsx`, `frontend/src/app/(dashboard)/sales/deals/[dealId]/page.tsx`, and `frontend/src/app/(dashboard)/sales/tasks/page.tsx`
 
 **Checkpoint**: Users can track revenue movement and follow-up work independently of AI campaign generation.
 
@@ -182,11 +184,11 @@
 
 ### Implementation for User Story 5
 
-- [ ] T079 [US5] Add workspace-scoped revenue snapshot, priority, pending approval, and recent activity queries in `frontend/src/server/queries/dashboard.ts`
+- [x] T079 [US5] Add workspace-scoped revenue snapshot, non-AI priority, and recent activity queries in `frontend/src/server/queries/dashboard.ts`
 - [ ] T080 [P] [US5] Build dashboard metric cards linked to filtered record views in `frontend/src/components/dashboard/metric-cards.tsx`
 - [ ] T081 [P] [US5] Build dashboard priorities and recent activity sections in `frontend/src/components/dashboard/revenue-priorities.tsx`
 - [ ] T082 [P] [US5] Build dashboard empty state with next setup actions in `frontend/src/components/dashboard/dashboard-empty-state.tsx`
-- [ ] T083 [US5] Assemble the protected revenue dashboard in `frontend/src/app/(dashboard)/dashboard/page.tsx`
+- [x] T083 [US5] Assemble the protected revenue dashboard in `frontend/src/app/(dashboard)/dashboard/page.tsx`
 
 **Checkpoint**: Users can start the day from real revenue summaries and navigate directly to the records that need attention.
 
@@ -197,14 +199,14 @@
 **Purpose**: Validate the complete Phase 1 workflow and tighten trust, usability, and operational documentation.
 
 - [ ] T084 [P] Add critical browser flow covering onboarding, contact creation, deal creation, campaign generation, draft approval, and dashboard review in `frontend/tests/e2e/phase1-revenue-workspace.spec.ts`
-- [ ] T085 [P] Add responsive navigation and dashboard shell for Phase 1 routes in `frontend/src/components/dashboard/dashboard-shell.tsx`
+- [x] T085 [P] Add responsive navigation and dashboard shell for Phase 1 routes in `frontend/src/components/dashboard/dashboard-shell.tsx`
 - [ ] T086 Add audit-history coverage for contact removal, deal movement, generation, and approvals in `frontend/tests/integration/activity-history.test.ts`
 - [ ] T087 Add cross-workspace access regression coverage for contacts, deals, tasks, campaigns, approvals, and dashboard summaries in `frontend/tests/integration/workspace-isolation.test.ts`
-- [ ] T088 [P] Document frontend setup, environment variables, migrations, and test commands in `frontend/README.md`
+- [x] T088 [P] Document frontend setup, environment variables, migrations, and test commands in `frontend/README.md`
 - [ ] T089 [P] Document AI backend setup, environment variables, API startup, and test commands in `backend-ai/README.md`
 - [ ] T090 Run frontend type checks, linting, unit tests, integration tests, and browser tests using scripts declared in `frontend/package.json`
 - [ ] T091 Run AI backend unit and API tests using configuration declared in `backend-ai/pyproject.toml`
-- [ ] T092 Review Phase 1 exclusions and remove any accidental scheduling, publishing, automatic email sending, autonomous execution, or advanced analytics behavior from `frontend/src/` and `backend-ai/app/`
+- [x] T092 Review Phase 1 exclusions and remove any accidental scheduling, publishing, automatic email sending, autonomous execution, or advanced analytics behavior from `frontend/src/` and `backend-ai/app/`
 
 ---
 

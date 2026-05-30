@@ -7,6 +7,8 @@ import {
   boolean,
   integer,
   index,
+  jsonb,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -87,6 +89,309 @@ export const rateLimit = pgTable("rate_limit", {
   count: integer("count").notNull(),
   lastRequest: bigint("last_request", { mode: "number" }).notNull(),
 });
+
+export const workspace = pgTable(
+  "workspace",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [uniqueIndex("workspace_slug_idx").on(table.slug)],
+);
+
+export const workspaceMember = pgTable(
+  "workspace_member",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    role: text("role").default("owner").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("workspace_member_workspace_user_idx").on(
+      table.workspaceId,
+      table.userId,
+    ),
+    index("workspace_member_user_idx").on(table.userId),
+  ],
+);
+
+export const businessProfile = pgTable(
+  "business_profile",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    businessName: text("business_name").notNull(),
+    industry: text("industry").notNull(),
+    targetAudience: text("target_audience").notNull(),
+    brandVoice: text("brand_voice").notNull(),
+    productsServices: text("products_services").notNull(),
+    salesProcess: text("sales_process").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("business_profile_workspace_idx").on(table.workspaceId),
+  ],
+);
+
+export const offer = pgTable(
+  "offer",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description").default("").notNull(),
+    status: text("status").default("active").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("offer_workspace_idx").on(table.workspaceId)],
+);
+
+export const company = pgTable(
+  "company",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    website: text("website"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("company_workspace_idx").on(table.workspaceId)],
+);
+
+export const contact = pgTable(
+  "contact",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    firstName: text("first_name").notNull(),
+    lastName: text("last_name").default("").notNull(),
+    email: text("email"),
+    normalizedEmail: text("normalized_email"),
+    phone: text("phone"),
+    normalizedPhone: text("normalized_phone"),
+    companyName: text("company_name"),
+    source: text("source").default("manual").notNull(),
+    status: text("status").default("lead").notNull(),
+    tags: text("tags").array().default([]).notNull(),
+    ownerUserId: text("owner_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    notes: text("notes").default("").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+    removedAt: timestamp("removed_at"),
+  },
+  (table) => [
+    index("contact_workspace_idx").on(table.workspaceId),
+    index("contact_workspace_email_idx").on(
+      table.workspaceId,
+      table.normalizedEmail,
+    ),
+    index("contact_workspace_phone_idx").on(
+      table.workspaceId,
+      table.normalizedPhone,
+    ),
+  ],
+);
+
+export const contactImport = pgTable(
+  "contact_import",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    fileName: text("file_name").notNull(),
+    acceptedCount: integer("accepted_count").default(0).notNull(),
+    rejectedCount: integer("rejected_count").default(0).notNull(),
+    duplicateCount: integer("duplicate_count").default(0).notNull(),
+    createdByUserId: text("created_by_user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [index("contact_import_workspace_idx").on(table.workspaceId)],
+);
+
+export const contactImportRow = pgTable(
+  "contact_import_row",
+  {
+    id: text("id").primaryKey(),
+    importId: text("import_id")
+      .notNull()
+      .references(() => contactImport.id, { onDelete: "cascade" }),
+    rowNumber: integer("row_number").notNull(),
+    status: text("status").notNull(),
+    rawData: jsonb("raw_data").$type<Record<string, string>>().notNull(),
+    reason: text("reason"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [index("contact_import_row_import_idx").on(table.importId)],
+);
+
+export const pipeline = pgTable(
+  "pipeline",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    name: text("name").default("Sales Pipeline").notNull(),
+    isDefault: boolean("is_default").default(true).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [index("pipeline_workspace_idx").on(table.workspaceId)],
+);
+
+export const pipelineStage = pgTable(
+  "pipeline_stage",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    pipelineId: text("pipeline_id")
+      .notNull()
+      .references(() => pipeline.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    position: integer("position").notNull(),
+    terminalKind: text("terminal_kind"),
+  },
+  (table) => [
+    index("pipeline_stage_pipeline_idx").on(table.pipelineId, table.position),
+  ],
+);
+
+export const deal = pgTable(
+  "deal",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    pipelineId: text("pipeline_id")
+      .notNull()
+      .references(() => pipeline.id, { onDelete: "cascade" }),
+    stageId: text("stage_id")
+      .notNull()
+      .references(() => pipelineStage.id, { onDelete: "restrict" }),
+    contactId: text("contact_id").references(() => contact.id, {
+      onDelete: "set null",
+    }),
+    title: text("title").notNull(),
+    valueCents: integer("value_cents").default(0).notNull(),
+    status: text("status").default("open").notNull(),
+    ownerUserId: text("owner_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    expectedCloseAt: timestamp("expected_close_at"),
+    closedAt: timestamp("closed_at"),
+    lostReason: text("lost_reason"),
+    notes: text("notes").default("").notNull(),
+    lastActivityAt: timestamp("last_activity_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("deal_workspace_idx").on(table.workspaceId),
+    index("deal_workspace_stage_idx").on(table.workspaceId, table.stageId),
+  ],
+);
+
+export const followUpTask = pgTable(
+  "follow_up_task",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    contactId: text("contact_id").references(() => contact.id, {
+      onDelete: "set null",
+    }),
+    dealId: text("deal_id").references(() => deal.id, {
+      onDelete: "set null",
+    }),
+    title: text("title").notNull(),
+    dueAt: timestamp("due_at").notNull(),
+    ownerUserId: text("owner_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    priority: text("priority").default("medium").notNull(),
+    status: text("status").default("open").notNull(),
+    notes: text("notes").default("").notNull(),
+    completedAt: timestamp("completed_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("follow_up_task_workspace_idx").on(table.workspaceId),
+    index("follow_up_task_due_idx").on(table.workspaceId, table.status, table.dueAt),
+  ],
+);
+
+export const activityEntry = pgTable(
+  "activity_entry",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    actorUserId: text("actor_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    entityType: text("entity_type").notNull(),
+    entityId: text("entity_id").notNull(),
+    action: text("action").notNull(),
+    summary: text("summary").notNull(),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("activity_entry_workspace_idx").on(table.workspaceId, table.createdAt),
+    index("activity_entry_entity_idx").on(table.entityType, table.entityId),
+  ],
+);
 
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),

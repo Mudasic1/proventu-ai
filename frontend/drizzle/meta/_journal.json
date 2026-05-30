@@ -8,6 +8,13 @@
       "when": 1780117038452,
       "tag": "0000_nifty_argent",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780119327670,
+      "tag": "0001_majestic_lucky_pierre",
+      "breakpoints": true
     }
   ]
 }
