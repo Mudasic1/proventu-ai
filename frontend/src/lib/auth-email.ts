@@ -11,7 +11,9 @@ type AuthEmail = {
 };
 
 export async function sendAuthEmail(email: AuthEmail) {
-  if (!serverEnv.AUTH_EMAIL_WEBHOOK_URL) {
+  const { AUTH_EMAIL_WEBHOOK_SECRET, AUTH_EMAIL_WEBHOOK_URL } = serverEnv;
+
+  if (!AUTH_EMAIL_WEBHOOK_URL || !AUTH_EMAIL_WEBHOOK_SECRET) {
     if (serverEnv.NODE_ENV !== "production") {
       console.info(`[auth-email:${email.kind}]`, {
         to: email.to,
@@ -23,11 +25,11 @@ export async function sendAuthEmail(email: AuthEmail) {
     throw new Error("Auth email transport is not configured.");
   }
 
-  const response = await fetch(serverEnv.AUTH_EMAIL_WEBHOOK_URL, {
+  const response = await fetch(AUTH_EMAIL_WEBHOOK_URL, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${serverEnv.AUTH_EMAIL_WEBHOOK_SECRET}`,
+      authorization: `Bearer ${AUTH_EMAIL_WEBHOOK_SECRET}`,
     },
     body: JSON.stringify(email),
   });

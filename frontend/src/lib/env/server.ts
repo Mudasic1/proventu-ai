@@ -23,14 +23,14 @@ const serverEnvSchema = z
     }
 
     if (
-      env.NODE_ENV === "production" &&
-      (!env.AUTH_EMAIL_WEBHOOK_URL || !env.AUTH_EMAIL_WEBHOOK_SECRET)
+      Boolean(env.AUTH_EMAIL_WEBHOOK_URL) !==
+      Boolean(env.AUTH_EMAIL_WEBHOOK_SECRET)
     ) {
       context.addIssue({
         code: "custom",
         path: ["AUTH_EMAIL_WEBHOOK_URL"],
         message:
-          "Configure AUTH_EMAIL_WEBHOOK_URL and AUTH_EMAIL_WEBHOOK_SECRET in production.",
+          "Configure both AUTH_EMAIL_WEBHOOK_URL and AUTH_EMAIL_WEBHOOK_SECRET, or leave both unset.",
       });
     }
   });
