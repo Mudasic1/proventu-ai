@@ -1,44 +1,48 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  CalendarClock,
   ChartNoAxesCombined,
   CircleAlert,
   ClipboardCheck,
   ContactRound,
+  DollarSign,
   History,
+  Megaphone,
 } from "lucide-react";
 
+import { MetricCard, Panel } from "@/components/shared/module-ui";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { requireWorkspacePageContext } from "@/lib/permissions/workspace";
 import { getDashboardData } from "@/server/queries/dashboard";
 
 export default async function DashboardPage() {
   const context = await requireWorkspacePageContext();
-  const data = await getDashboardData(context.workspaceId);
+  const data = await getDashboardData(
+    context.workspaceId,
+    context.role === "sales_rep" ? context.session.user.id : undefined,
+  );
   const firstName = context.session.user.name.split(" ")[0];
   const metrics = [
-    { label: "CRM contacts", value: data.metrics.contacts.toString(), icon: ContactRound },
-    { label: "Open pipeline", value: formatCurrency(data.metrics.openPipelineCents), icon: ChartNoAxesCombined },
-    { label: "Overdue tasks", value: data.metrics.overdueTasks.toString(), icon: ClipboardCheck },
+    { label: "Leads this week", value: data.metrics.leadsThisWeek.toString(), icon: ContactRound },
+    { label: "Deals in pipeline", value: formatCurrency(data.metrics.openPipelineCents), icon: ChartNoAxesCombined },
+    { label: "Revenue forecast", value: formatCurrency(data.metrics.revenueForecastCents), icon: DollarSign },
+    { label: "Tasks due today", value: data.metrics.tasksDueToday.toString(), icon: ClipboardCheck },
+    { label: "Active campaigns", value: data.metrics.activeCampaigns.toString(), icon: Megaphone },
+    { label: "Scheduled posts", value: data.metrics.scheduledPosts.toString(), icon: CalendarClock },
     { label: "Stale deals", value: data.metrics.staleDeals.toString(), icon: CircleAlert },
+    { label: "Email drafts", value: data.metrics.emailDrafts.toString(), icon: Megaphone },
   ];
   return (
     <div className="grid gap-5">
       <section>
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#d8ff62]">Revenue workspace</p>
         <h1 className="mt-2 font-display text-6xl font-bold leading-[0.88] tracking-[-0.1em]">Good to see you, <span className="text-[#d8ff62]">{firstName}.</span></h1>
-        <p className="mt-4 max-w-2xl text-sm leading-6 text-[#9eaea8]">Your dashboard uses workspace data only. AI agents, generated outreach, and automation are intentionally outside this build.</p>
+        <p className="mt-4 max-w-2xl text-sm leading-6 text-[#9eaea8]">Your workspace command center for CRM, pipeline, follow-ups, and campaign operations.</p>
       </section>
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map((metric) => {
-          const Icon = metric.icon;
-          return (
-            <article key={metric.label} className="rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-4">
-              <Icon className="size-4 text-[#d8ff62]" />
-              <p className="mt-8 font-display text-4xl font-bold tracking-[-0.09em]">{metric.value}</p>
-              <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#82928c]">{metric.label}</p>
-            </article>
-          );
+          return <MetricCard key={metric.label} {...metric} />;
         })}
       </section>
       <section className="grid gap-4 xl:grid-cols-2">
@@ -79,7 +83,36 @@ export default async function DashboardPage() {
           </div>
         </article>
       </section>
-      <section className="rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-4">
+      <section className="grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">
+        <Panel>
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-2xl font-bold tracking-[-0.07em]">Hot leads</h2>
+            <Link href="/crm/contacts?status=qualified" className="flex items-center gap-1 text-xs font-bold text-[#d8ff62]">CRM <ArrowRight className="size-3.5" /></Link>
+          </div>
+          <p className="mt-2 text-xs leading-5 text-[#82928c]">Based on the manual qualified status only.</p>
+          <div className="mt-4 grid gap-2">
+            {data.hotLeads.map((lead) => (
+              <Link key={lead.id} href={`/crm/contacts/${lead.id}`} className="rounded-xl border border-white/[0.06] bg-[#0b1916] p-3 transition hover:border-[#d8ff62]/25">
+                <p className="text-sm font-bold">{lead.firstName} {lead.lastName}</p>
+                <p className="mt-1 text-xs text-[#82928c]">{lead.companyName || lead.email || "Qualified contact"}</p>
+              </Link>
+            ))}
+            {data.hotLeads.length === 0 ? <p className="py-6 text-center text-sm text-[#82928c]">No qualified leads yet.</p> : null}
+          </div>
+        </Panel>
+        <Panel>
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-2xl font-bold tracking-[-0.07em]">Campaign snapshot</h2>
+            <Link href="/marketing/campaigns" className="flex items-center gap-1 text-xs font-bold text-[#d8ff62]">Campaigns <ArrowRight className="size-3.5" /></Link>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border border-white/[0.06] bg-[#0b1916] p-3"><p className="font-display text-3xl font-bold tracking-[-0.08em]">{data.metrics.activeCampaigns}</p><p className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#82928c]">Active campaigns</p></div>
+            <div className="rounded-xl border border-white/[0.06] bg-[#0b1916] p-3"><p className="font-display text-3xl font-bold tracking-[-0.08em]">{data.metrics.scheduledPosts}</p><p className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#82928c]">Scheduled posts</p></div>
+            <div className="rounded-xl border border-white/[0.06] bg-[#0b1916] p-3"><p className="font-display text-3xl font-bold tracking-[-0.08em]">{data.metrics.emailDrafts}</p><p className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#82928c]">Email drafts</p></div>
+          </div>
+        </Panel>
+      </section>
+      <Panel>
         <h2 className="flex items-center gap-2 font-display text-2xl font-bold tracking-[-0.07em]"><History className="size-5 text-[#d8ff62]" /> Recent activity</h2>
         <div className="mt-4 grid gap-2">
           {data.recentActivity.map((entry) => (
@@ -90,7 +123,7 @@ export default async function DashboardPage() {
           ))}
           {data.recentActivity.length === 0 ? <p className="py-6 text-center text-sm text-[#82928c]">Your workspace activity will appear here.</p> : null}
         </div>
-      </section>
+      </Panel>
     </div>
   );
 }

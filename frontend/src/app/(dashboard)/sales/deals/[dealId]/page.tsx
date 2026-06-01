@@ -5,7 +5,7 @@ import { ArrowLeft, Trophy, XCircle } from "lucide-react";
 import { TaskForm } from "@/components/pipeline/task-form";
 import { Button } from "@/components/ui/button";
 import { formatCurrency, formatDate } from "@/lib/format";
-import { requireWorkspacePageContext } from "@/lib/permissions/workspace";
+import { hasPermission, requirePermission } from "@/lib/permissions/rbac";
 import { closeDealAction } from "@/server/actions/pipeline";
 import { listContacts } from "@/server/queries/contacts";
 import {
@@ -16,13 +16,16 @@ import {
 
 export default async function DealPage({ params }: { params: Promise<{ dealId: string }> }) {
   const { dealId } = await params;
-  const context = await requireWorkspacePageContext();
-  const record = await getDeal(context.workspaceId, dealId);
+  const context = await requirePermission("pipeline:read");
+  const canWriteDeals = hasPermission(context.role, "pipeline:write");
+  const canWriteTasks = hasPermission(context.role, "tasks:write");
+  const ownerUserId = context.role === "sales_rep" ? context.session.user.id : undefined;
+  const record = await getDeal(context.workspaceId, dealId, ownerUserId);
   if (!record) notFound();
   const pipeline = await getDefaultPipeline(context.workspaceId);
   const [contacts, deals] = await Promise.all([
-    listContacts(context.workspaceId, {}),
-    pipeline ? listPipelineDeals(context.workspaceId, pipeline.id) : [],
+    listContacts(context.workspaceId, { ownerUserId }),
+    pipeline ? listPipelineDeals(context.workspaceId, pipeline.id, ownerUserId) : [],
   ]);
   return (
     <div className="grid gap-5">
@@ -37,7 +40,7 @@ export default async function DealPage({ params }: { params: Promise<{ dealId: s
         </div>
         {record.notes ? <p className="mt-5 border-t border-white/[0.08] pt-4 text-sm leading-6 text-[#9eaea8]">{record.notes}</p> : null}
       </section>
-      {record.status === "open" ? (
+      {canWriteDeals && record.status === "open" ? (
         <section className="grid gap-4 rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-4 md:grid-cols-2">
           <form action={closeDealAction.bind(null, dealId)}>
             <input type="hidden" name="outcome" value="won" />
@@ -50,10 +53,10 @@ export default async function DealPage({ params }: { params: Promise<{ dealId: s
           </form>
         </section>
       ) : null}
-      <details className="rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-4">
+      {canWriteTasks ? <details className="rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-4">
         <summary className="cursor-pointer text-sm font-bold text-[#d8ff62]">Add a follow-up for this deal</summary>
         <div className="mt-4"><TaskForm contacts={contacts} deals={deals} defaultDealId={dealId} defaultContactId={record.contactId} /></div>
-      </details>
+      </details> : null}
     </div>
   );
 }

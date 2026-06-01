@@ -33,7 +33,7 @@ export async function listPipelineStages(workspaceId: string, pipelineId: string
     .orderBy(asc(pipelineStage.position));
 }
 
-export async function listPipelineDeals(workspaceId: string, pipelineId: string) {
+export async function listPipelineDeals(workspaceId: string, pipelineId: string, ownerUserId?: string) {
   return db
     .select({
       id: deal.id,
@@ -53,12 +53,13 @@ export async function listPipelineDeals(workspaceId: string, pipelineId: string)
       and(
         eq(deal.workspaceId, workspaceId),
         eq(deal.pipelineId, pipelineId),
+        ownerUserId ? eq(deal.ownerUserId, ownerUserId) : undefined,
       ),
     )
     .orderBy(desc(deal.updatedAt));
 }
 
-export async function getDeal(workspaceId: string, dealId: string) {
+export async function getDeal(workspaceId: string, dealId: string, ownerUserId?: string) {
   const [record] = await db
     .select({
       id: deal.id,
@@ -79,12 +80,12 @@ export async function getDeal(workspaceId: string, dealId: string) {
     })
     .from(deal)
     .leftJoin(contact, eq(deal.contactId, contact.id))
-    .where(and(eq(deal.id, dealId), eq(deal.workspaceId, workspaceId)))
+    .where(and(eq(deal.id, dealId), eq(deal.workspaceId, workspaceId), ownerUserId ? eq(deal.ownerUserId, ownerUserId) : undefined))
     .limit(1);
   return record;
 }
 
-export async function listFollowUpTasks(workspaceId: string, status?: string) {
+export async function listFollowUpTasks(workspaceId: string, status?: string, ownerUserId?: string) {
   return db
     .select({
       id: followUpTask.id,
@@ -106,6 +107,7 @@ export async function listFollowUpTasks(workspaceId: string, status?: string) {
       and(
         eq(followUpTask.workspaceId, workspaceId),
         status && status !== "all" ? eq(followUpTask.status, status) : undefined,
+        ownerUserId ? eq(followUpTask.ownerUserId, ownerUserId) : undefined,
       ),
     )
     .orderBy(asc(followUpTask.dueAt));

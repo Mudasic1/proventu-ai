@@ -9,6 +9,7 @@ import { normalizeEmail, normalizePhone } from "@/lib/validations/contacts";
 type ContactFilters = {
   query?: string;
   status?: string;
+  ownerUserId?: string;
 };
 
 export async function listContacts(workspaceId: string, filters: ContactFilters) {
@@ -20,6 +21,7 @@ export async function listContacts(workspaceId: string, filters: ContactFilters)
       and(
         eq(contact.workspaceId, workspaceId),
         isNull(contact.removedAt),
+        filters.ownerUserId ? eq(contact.ownerUserId, filters.ownerUserId) : undefined,
         filters.status && filters.status !== "all"
           ? eq(contact.status, filters.status)
           : undefined,
@@ -37,7 +39,7 @@ export async function listContacts(workspaceId: string, filters: ContactFilters)
     .limit(100);
 }
 
-export async function getContact(workspaceId: string, contactId: string) {
+export async function getContact(workspaceId: string, contactId: string, ownerUserId?: string) {
   const [record] = await db
     .select()
     .from(contact)
@@ -46,6 +48,7 @@ export async function getContact(workspaceId: string, contactId: string) {
         eq(contact.id, contactId),
         eq(contact.workspaceId, workspaceId),
         isNull(contact.removedAt),
+        ownerUserId ? eq(contact.ownerUserId, ownerUserId) : undefined,
       ),
     )
     .limit(1);

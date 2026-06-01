@@ -8,6 +8,7 @@ import {
   toActionError,
 } from "@/lib/errors/app-error";
 import { getWorkspaceContext } from "@/lib/permissions/workspace";
+import { hasPermission } from "@/lib/permissions/rbac";
 import { onboardingSchema } from "@/lib/validations/onboarding";
 import {
   createWorkspaceForUser,
@@ -42,6 +43,25 @@ export async function createWorkspaceAction(
   redirect("/dashboard?toast=workspace-created");
 }
 
+export async function skipWorkspaceSetupAction() {
+  const session = await requireCurrentSession();
+  const displayName = session.user.name.trim();
+  const businessName = displayName ? `${displayName}'s Workspace` : "My Workspace";
+
+  await createWorkspaceForUser(session.user.id, {
+    businessName,
+    industry: "Not set",
+    targetAudience: "Add your ideal customer from workspace settings.",
+    brandVoice: "Not set",
+    productsServices: "Add your products or services from workspace settings.",
+    offerName: "Primary offer",
+    offerDescription: "Add your primary offer details from workspace settings.",
+    salesProcess: "Add your current sales process from workspace settings.",
+  });
+
+  redirect("/dashboard?toast=onboarding-skipped");
+}
+
 export async function updateWorkspaceProfileAction(
   _state: ActionState,
   formData: FormData,
@@ -59,6 +79,9 @@ export async function updateWorkspaceProfileAction(
   try {
     const context = await getWorkspaceContext();
     if (!context) return { status: "error", message: "Workspace not found." };
+    if (!hasPermission(context.role, "settings:write")) {
+      return { status: "error", message: "You do not have access to update workspace settings." };
+    }
     await updateWorkspaceProfile(
       context.workspaceId,
       context.session.user.id,

@@ -10,6 +10,7 @@ export default async function ProductLayout({
     <DashboardShell
       user={context.session.user}
       workspaceName={context.workspaceName}
+      role={context.role}
     >
       {children}
     </DashboardShell>

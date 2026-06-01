@@ -2,7 +2,7 @@ import Link from "next/link";
 import {
   ArrowRight,
   BadgeCheck,
-  Bot,
+  ClipboardList,
   Check,
   ChevronRight,
   CircleCheck,
@@ -29,7 +29,7 @@ const outcomes = [
     icon: Megaphone,
     number: "02",
     title: "Turn one offer into a campaign.",
-    copy: "Get social posts, email drafts, and a clear campaign angle prepared in your brand voice.",
+    copy: "Plan social posts, email drafts, and a clear campaign angle in one workspace.",
   },
   {
     icon: ShieldCheck,
@@ -41,14 +41,14 @@ const outcomes = [
 
 const executionSteps = [
   {
-    icon: Sparkles,
+    icon: ClipboardList,
     title: "Add the business context",
     copy: "Bring your offer, audience, and contacts. Your workspace learns what you sell and who needs it.",
   },
   {
-    icon: Bot,
-    title: "Let the work arrive prepared",
-    copy: "Campaign ideas, follow-up drafts, and the next best actions show up as a focused daily plan.",
+    icon: ClipboardList,
+    title: "Plan the work with your team",
+    copy: "Document campaign briefs, follow-up tasks, and the next actions in a focused daily plan.",
   },
   {
     icon: BadgeCheck,
@@ -58,12 +58,12 @@ const executionSteps = [
 ];
 
 const revenueLoop = [
-  "Lead scoring",
+  "Lead tracking",
   "Campaign planning",
   "Social drafts",
   "Email follow-ups",
   "Pipeline clarity",
-  "Approval queue",
+  "Team review",
 ];
 
 function BrandMark() {
@@ -87,12 +87,12 @@ export default function Home() {
         >
           <Link
             href="/"
-            aria-label="SalesEasyAI home"
+            aria-label="SalesEasy home"
             className="flex items-center gap-2.5 rounded-xl px-1 py-1"
           >
             <BrandMark />
             <span className="font-display text-[17px] font-bold tracking-[-0.06em]">
-              SalesEasy<span className="text-[#d8ff62]">AI</span>
+              Sales<span className="text-[#d8ff62]">Easy</span>
             </span>
           </Link>
 
@@ -132,7 +132,7 @@ export default function Home() {
 
               <p className="mt-7 max-w-xl text-base leading-7 text-[#b5c2bd] sm:text-lg sm:leading-8">
                 Turn your offer and lead list into campaigns, clear priorities,
-                and follow-ups your team can approve before the day gets busy.
+                and follow-ups your team can review before the day gets busy.
               </p>
 
               <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -250,8 +250,8 @@ export default function Home() {
           <div className="max-w-3xl">
             <p className="section-kicker">A calmer way to grow</p>
             <h2 className="mt-5 font-display text-5xl font-bold leading-[0.92] tracking-[-0.085em] text-[#f4f2ea] sm:text-7xl">
-              Strategy in. Busywork out.
-              <span className="text-[#d8ff62]"> You approve the rest.</span>
+              Strategy in. Next steps clear.
+              <span className="text-[#d8ff62]"> Your team stays aligned.</span>
             </h2>
           </div>
 
@@ -288,14 +288,14 @@ export default function Home() {
                 The revenue loop
               </div>
               <p className="mt-8 max-w-2xl font-display text-4xl font-bold leading-[0.92] tracking-[-0.085em] sm:text-5xl">
-                Attract. Nurture. Close. Retain. Repeat with a smarter plan.
+                Attract. Nurture. Close. Retain. Repeat with a clearer plan.
               </p>
             </article>
 
             <article className="rounded-[28px] border border-white/[0.09] bg-white/[0.04] p-7 sm:p-8">
               <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-[#d8ff62]">
                 <MessagesSquare className="size-4" />
-                Human approval stays on
+                Team review stays on
               </div>
               <p className="mt-8 font-display text-3xl font-bold leading-[0.96] tracking-[-0.075em] text-[#f4f2ea]">
                 Your voice. Your call. Every time.
@@ -351,10 +351,10 @@ export default function Home() {
         <div className="mx-auto flex max-w-7xl flex-col gap-3 text-xs text-[#82928c] sm:flex-row sm:items-center sm:justify-between">
           <Link href="/" className="flex items-center gap-2 font-bold text-[#d5ddd9]">
             <BrandMark />
-            SalesEasyAI
+            SalesEasy
           </Link>
           <p>Revenue execution for growing teams.</p>
-          <p>&copy; 2026 SalesEasyAI</p>
+          <p>&copy; 2026 SalesEasy</p>
         </div>
       </footer>
     </main>

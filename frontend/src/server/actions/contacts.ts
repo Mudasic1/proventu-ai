@@ -7,7 +7,7 @@ import {
   type ActionState,
   toActionError,
 } from "@/lib/errors/app-error";
-import { requireWorkspaceContext } from "@/lib/permissions/workspace";
+import { requirePermission } from "@/lib/permissions/rbac";
 import { contactSchema, noteSchema } from "@/lib/validations/contacts";
 import { importContacts } from "@/server/mutations/contact-imports";
 import {
@@ -22,8 +22,8 @@ export type ContactActionState = ActionState & {
   importSummary?: { acceptedCount: number; rejectedCount: number; duplicateCount: number };
 };
 
-function mutationContext(context: Awaited<ReturnType<typeof requireWorkspaceContext>>) {
-  return { workspaceId: context.workspaceId, userId: context.session.user.id };
+function mutationContext(context: Awaited<ReturnType<typeof requirePermission>>) {
+  return { workspaceId: context.workspaceId, userId: context.session.user.id, role: context.role };
 }
 
 function parseContact(formData: FormData) {
@@ -43,7 +43,7 @@ export async function createContactAction(
     };
   }
   try {
-    const context = await requireWorkspaceContext();
+    const context = await requirePermission("contacts:write");
     const created = await createContact(mutationContext(context), result.data);
     if ("duplicate" in created) {
       return {
@@ -72,7 +72,7 @@ export async function updateContactAction(
     };
   }
   try {
-    const context = await requireWorkspaceContext();
+    const context = await requirePermission("contacts:write");
     await updateContact(mutationContext(context), contactId, result.data);
     revalidatePath(`/crm/contacts/${contactId}`);
     return { status: "success", message: "Contact updated." };
@@ -84,14 +84,14 @@ export async function updateContactAction(
 export async function addContactNoteAction(contactId: string, formData: FormData) {
   const result = noteSchema.safeParse(Object.fromEntries(formData));
   if (!result.success) return;
-  const context = await requireWorkspaceContext();
+  const context = await requirePermission("contacts:write");
   await addContactNote(mutationContext(context), contactId, result.data.note);
   revalidatePath(`/crm/contacts/${contactId}`);
 }
 
 export async function removeContactAction(contactId: string, formData: FormData) {
   if (formData.get("confirmation") !== "remove") return;
-  const context = await requireWorkspaceContext();
+  const context = await requirePermission("contacts:write");
   await removeContact(mutationContext(context), contactId);
   redirect("/crm/contacts?toast=contact-removed");
 }
@@ -108,7 +108,7 @@ export async function importContactsAction(
     return { status: "error", message: "Upload a CSV file." };
   }
   try {
-    const context = await requireWorkspaceContext();
+    const context = await requirePermission("contacts:write");
     const importSummary = await importContacts(mutationContext(context), file);
     revalidatePath("/crm/contacts");
     return {

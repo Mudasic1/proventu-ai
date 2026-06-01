@@ -11,7 +11,7 @@ import {
 import { createContact } from "@/server/mutations/contacts";
 import { findDuplicateContact } from "@/server/queries/contacts";
 
-type ImportContext = { workspaceId: string; userId: string };
+type ImportContext = { workspaceId: string; userId: string; role: string };
 
 export async function importContacts(
   context: ImportContext,

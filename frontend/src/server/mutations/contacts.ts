@@ -14,7 +14,11 @@ import {
 import { recordActivity } from "@/server/mutations/activity";
 import { findDuplicateContact, getContact } from "@/server/queries/contacts";
 
-type MutationContext = { workspaceId: string; userId: string };
+type MutationContext = { workspaceId: string; userId: string; role: string };
+
+function ownerScope(context: MutationContext) {
+  return context.role === "sales_rep" ? context.userId : undefined;
+}
 
 export async function createContact(
   context: MutationContext,
@@ -56,7 +60,7 @@ export async function updateContact(
   contactId: string,
   input: ContactInput,
 ) {
-  if (!(await getContact(context.workspaceId, contactId))) {
+  if (!(await getContact(context.workspaceId, contactId, ownerScope(context)))) {
     throw new AppError("NOT_FOUND", "Contact not found.");
   }
 
@@ -91,7 +95,7 @@ export async function addContactNote(
   contactId: string,
   note: string,
 ) {
-  if (!(await getContact(context.workspaceId, contactId))) {
+  if (!(await getContact(context.workspaceId, contactId, ownerScope(context)))) {
     throw new AppError("NOT_FOUND", "Contact not found.");
   }
   await recordActivity({
@@ -108,7 +112,7 @@ export async function removeContact(
   context: MutationContext,
   contactId: string,
 ) {
-  if (!(await getContact(context.workspaceId, contactId))) {
+  if (!(await getContact(context.workspaceId, contactId, ownerScope(context)))) {
     throw new AppError("NOT_FOUND", "Contact not found.");
   }
   await db

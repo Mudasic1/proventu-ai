@@ -16,6 +16,7 @@ export const user = pgTable("user", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").default(false).notNull(),
+  isSuperAdmin: boolean("is_super_admin").default(false).notNull(),
   image: text("image"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
@@ -179,6 +180,11 @@ export const company = pgTable(
       .references(() => workspace.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
     website: text("website"),
+    email: text("email"),
+    phone: text("phone"),
+    industry: text("industry"),
+    status: text("status").default("prospect").notNull(),
+    notes: text("notes").default("").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -202,6 +208,9 @@ export const contact = pgTable(
     phone: text("phone"),
     normalizedPhone: text("normalized_phone"),
     companyName: text("company_name"),
+    companyId: text("company_id").references(() => company.id, {
+      onDelete: "set null",
+    }),
     source: text("source").default("manual").notNull(),
     status: text("status").default("lead").notNull(),
     tags: text("tags").array().default([]).notNull(),
@@ -313,8 +322,12 @@ export const deal = pgTable(
     contactId: text("contact_id").references(() => contact.id, {
       onDelete: "set null",
     }),
+    companyId: text("company_id").references(() => company.id, {
+      onDelete: "set null",
+    }),
     title: text("title").notNull(),
     valueCents: integer("value_cents").default(0).notNull(),
+    probability: integer("probability").default(50).notNull(),
     status: text("status").default("open").notNull(),
     ownerUserId: text("owner_user_id").references(() => user.id, {
       onDelete: "set null",
@@ -390,6 +403,354 @@ export const activityEntry = pgTable(
   (table) => [
     index("activity_entry_workspace_idx").on(table.workspaceId, table.createdAt),
     index("activity_entry_entity_idx").on(table.entityType, table.entityId),
+  ],
+);
+
+export const workspaceSetting = pgTable(
+  "workspace_setting",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    timezone: text("timezone").default("UTC").notNull(),
+    currency: text("currency").default("USD").notNull(),
+    brandVoice: text("brand_voice").default("").notNull(),
+    emailFromName: text("email_from_name").default("").notNull(),
+    requireContentReview: boolean("require_content_review").default(true).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("workspace_setting_workspace_idx").on(table.workspaceId),
+  ],
+);
+
+export const campaign = pgTable(
+  "campaign",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    channel: text("channel").default("multi_channel").notNull(),
+    objective: text("objective").default("").notNull(),
+    status: text("status").default("draft").notNull(),
+    budgetCents: integer("budget_cents").default(0).notNull(),
+    startsAt: timestamp("starts_at"),
+    endsAt: timestamp("ends_at"),
+    ownerUserId: text("owner_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("campaign_workspace_idx").on(table.workspaceId, table.status),
+  ],
+);
+
+export const socialPost = pgTable(
+  "social_post",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    campaignId: text("campaign_id").references(() => campaign.id, {
+      onDelete: "set null",
+    }),
+    platform: text("platform").notNull(),
+    content: text("content").notNull(),
+    status: text("status").default("draft").notNull(),
+    scheduledAt: timestamp("scheduled_at"),
+    publishedAt: timestamp("published_at"),
+    createdByUserId: text("created_by_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("social_post_workspace_idx").on(table.workspaceId, table.status),
+    index("social_post_calendar_idx").on(table.workspaceId, table.scheduledAt),
+  ],
+);
+
+export const emailCampaign = pgTable(
+  "email_campaign",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    campaignId: text("campaign_id").references(() => campaign.id, {
+      onDelete: "set null",
+    }),
+    name: text("name").notNull(),
+    subject: text("subject").notNull(),
+    previewText: text("preview_text").default("").notNull(),
+    body: text("body").notNull(),
+    status: text("status").default("draft").notNull(),
+    scheduledAt: timestamp("scheduled_at"),
+    sentAt: timestamp("sent_at"),
+    createdByUserId: text("created_by_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("email_campaign_workspace_idx").on(table.workspaceId, table.status),
+  ],
+);
+
+export const emailSequence = pgTable(
+  "email_sequence",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    campaignId: text("campaign_id").references(() => campaign.id, {
+      onDelete: "set null",
+    }),
+    name: text("name").notNull(),
+    description: text("description").default("").notNull(),
+    status: text("status").default("draft").notNull(),
+    createdByUserId: text("created_by_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("email_sequence_workspace_idx").on(table.workspaceId)],
+);
+
+export const emailSequenceStep = pgTable(
+  "email_sequence_step",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    sequenceId: text("sequence_id")
+      .notNull()
+      .references(() => emailSequence.id, { onDelete: "cascade" }),
+    position: integer("position").notNull(),
+    delayDays: integer("delay_days").default(0).notNull(),
+    subject: text("subject").notNull(),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("email_sequence_step_sequence_idx").on(
+      table.workspaceId,
+      table.sequenceId,
+      table.position,
+    ),
+  ],
+);
+
+export const inboxConversation = pgTable(
+  "inbox_conversation",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    contactId: text("contact_id").references(() => contact.id, {
+      onDelete: "set null",
+    }),
+    subject: text("subject").notNull(),
+    channel: text("channel").default("internal_note").notNull(),
+    status: text("status").default("open").notNull(),
+    priority: text("priority").default("normal").notNull(),
+    assignedUserId: text("assigned_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    lastMessageAt: timestamp("last_message_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("inbox_conversation_workspace_idx").on(
+      table.workspaceId,
+      table.status,
+      table.lastMessageAt,
+    ),
+  ],
+);
+
+export const inboxMessage = pgTable(
+  "inbox_message",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    conversationId: text("conversation_id")
+      .notNull()
+      .references(() => inboxConversation.id, { onDelete: "cascade" }),
+    senderKind: text("sender_kind").default("workspace_user").notNull(),
+    body: text("body").notNull(),
+    createdByUserId: text("created_by_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("inbox_message_conversation_idx").on(
+      table.workspaceId,
+      table.conversationId,
+      table.createdAt,
+    ),
+  ],
+);
+
+export const automation = pgTable(
+  "automation",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description").default("").notNull(),
+    status: text("status").default("draft").notNull(),
+    createdByUserId: text("created_by_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [index("automation_workspace_idx").on(table.workspaceId)],
+);
+
+export const automationTrigger = pgTable(
+  "automation_trigger",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    automationId: text("automation_id")
+      .notNull()
+      .references(() => automation.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    config: jsonb("config").$type<Record<string, string>>().default({}).notNull(),
+  },
+  (table) => [index("automation_trigger_automation_idx").on(table.automationId)],
+);
+
+export const automationCondition = pgTable(
+  "automation_condition",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    automationId: text("automation_id")
+      .notNull()
+      .references(() => automation.id, { onDelete: "cascade" }),
+    field: text("field").notNull(),
+    operator: text("operator").notNull(),
+    value: text("value").notNull(),
+    position: integer("position").default(0).notNull(),
+  },
+  (table) => [
+    index("automation_condition_automation_idx").on(
+      table.automationId,
+      table.position,
+    ),
+  ],
+);
+
+export const automationAction = pgTable(
+  "automation_action",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    automationId: text("automation_id")
+      .notNull()
+      .references(() => automation.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    config: jsonb("config").$type<Record<string, string>>().default({}).notNull(),
+    position: integer("position").default(0).notNull(),
+  },
+  (table) => [
+    index("automation_action_automation_idx").on(table.automationId, table.position),
+  ],
+);
+
+export const billingPlan = pgTable(
+  "billing_plan",
+  {
+    id: text("id").primaryKey(),
+    code: text("code").notNull(),
+    name: text("name").notNull(),
+    priceCents: integer("price_cents").default(0).notNull(),
+    interval: text("interval").default("month").notNull(),
+    description: text("description").default("").notNull(),
+    features: text("features").array().default([]).notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [uniqueIndex("billing_plan_code_idx").on(table.code)],
+);
+
+export const workspaceSubscription = pgTable(
+  "workspace_subscription",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    billingPlanId: text("billing_plan_id")
+      .notNull()
+      .references(() => billingPlan.id, { onDelete: "restrict" }),
+    status: text("status").default("active").notNull(),
+    renewsAt: timestamp("renews_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("workspace_subscription_workspace_idx").on(table.workspaceId),
   ],
 );
 

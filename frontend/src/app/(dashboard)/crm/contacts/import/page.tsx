@@ -1,8 +1,10 @@
 import { Upload } from "lucide-react";
 
 import { ContactImportForm } from "@/components/crm/contact-import-form";
+import { requirePermission } from "@/lib/permissions/rbac";
 
-export default function ImportContactsPage() {
+export default async function ImportContactsPage() {
+  await requirePermission("contacts:write");
   return (
     <section className="max-w-2xl">
       <p className="section-kicker">CRM import</p>

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { type ActionState, toActionError } from "@/lib/errors/app-error";
-import { requireWorkspaceContext } from "@/lib/permissions/workspace";
+import { requirePermission } from "@/lib/permissions/rbac";
 import {
   closeDealSchema,
   dealSchema,
@@ -19,8 +19,8 @@ import {
   moveDeal,
 } from "@/server/mutations/pipeline";
 
-function mutationContext(context: Awaited<ReturnType<typeof requireWorkspaceContext>>) {
-  return { workspaceId: context.workspaceId, userId: context.session.user.id };
+function mutationContext(context: Awaited<ReturnType<typeof requirePermission>>) {
+  return { workspaceId: context.workspaceId, userId: context.session.user.id, role: context.role };
 }
 
 export async function createDealAction(_state: ActionState, formData: FormData) {
@@ -33,7 +33,7 @@ export async function createDealAction(_state: ActionState, formData: FormData) 
     };
   }
   try {
-    const context = await requireWorkspaceContext();
+    const context = await requirePermission("pipeline:write");
     await createDeal(mutationContext(context), result.data);
   } catch (error) {
     return toActionError(error);
@@ -44,7 +44,7 @@ export async function createDealAction(_state: ActionState, formData: FormData) 
 export async function moveDealAction(dealId: string, formData: FormData) {
   const result = moveDealSchema.safeParse(Object.fromEntries(formData));
   if (!result.success) return;
-  const context = await requireWorkspaceContext();
+  const context = await requirePermission("pipeline:write");
   await moveDeal(mutationContext(context), dealId, result.data.stageId);
   revalidatePath("/sales/pipeline");
 }
@@ -52,7 +52,7 @@ export async function moveDealAction(dealId: string, formData: FormData) {
 export async function closeDealAction(dealId: string, formData: FormData) {
   const result = closeDealSchema.safeParse(Object.fromEntries(formData));
   if (!result.success) return;
-  const context = await requireWorkspaceContext();
+  const context = await requirePermission("pipeline:write");
   await closeDeal(
     mutationContext(context),
     dealId,
@@ -73,7 +73,7 @@ export async function createTaskAction(_state: ActionState, formData: FormData) 
     };
   }
   try {
-    const context = await requireWorkspaceContext();
+    const context = await requirePermission("tasks:write");
     await createFollowUpTask(mutationContext(context), result.data);
   } catch (error) {
     return toActionError(error);
@@ -82,7 +82,7 @@ export async function createTaskAction(_state: ActionState, formData: FormData) 
 }
 
 export async function completeTaskAction(taskId: string) {
-  const context = await requireWorkspaceContext();
+  const context = await requirePermission("tasks:write");
   await completeFollowUpTask(mutationContext(context), taskId);
   revalidatePath("/sales/tasks");
 }

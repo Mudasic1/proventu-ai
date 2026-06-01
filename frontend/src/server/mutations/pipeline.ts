@@ -15,7 +15,11 @@ import type { DealInput, TaskInput } from "@/lib/validations/pipeline";
 import { recordActivity } from "@/server/mutations/activity";
 import { getDeal } from "@/server/queries/pipeline";
 
-type MutationContext = { workspaceId: string; userId: string };
+type MutationContext = { workspaceId: string; userId: string; role: string };
+
+function ownerScope(context: MutationContext) {
+  return context.role === "sales_rep" ? context.userId : undefined;
+}
 
 async function requireStage(workspaceId: string, stageId: string) {
   const [stage] = await db
@@ -89,7 +93,7 @@ export async function moveDeal(
   dealId: string,
   stageId: string,
 ) {
-  const record = await getDeal(context.workspaceId, dealId);
+  const record = await getDeal(context.workspaceId, dealId, ownerScope(context));
   if (!record) throw new AppError("NOT_FOUND", "Deal not found.");
   if (record.status !== "open") {
     throw new AppError("CONFLICT", "Closed deals cannot move between active stages.");
@@ -118,7 +122,7 @@ export async function closeDeal(
   outcome: "won" | "lost",
   lostReason?: string,
 ) {
-  const record = await getDeal(context.workspaceId, dealId);
+  const record = await getDeal(context.workspaceId, dealId, ownerScope(context));
   if (!record) throw new AppError("NOT_FOUND", "Deal not found.");
   if (record.status !== "open") {
     throw new AppError("CONFLICT", "This deal is already closed.");
@@ -162,7 +166,7 @@ export async function createFollowUpTask(
   input: TaskInput,
 ) {
   await requireContact(context.workspaceId, input.contactId);
-  if (input.dealId && !(await getDeal(context.workspaceId, input.dealId))) {
+  if (input.dealId && !(await getDeal(context.workspaceId, input.dealId, ownerScope(context)))) {
     throw new AppError("NOT_FOUND", "Deal not found.");
   }
   const taskId = crypto.randomUUID();
@@ -199,6 +203,7 @@ export async function completeFollowUpTask(
       and(
         eq(followUpTask.workspaceId, context.workspaceId),
         eq(followUpTask.id, taskId),
+        context.role === "sales_rep" ? eq(followUpTask.ownerUserId, context.userId) : undefined,
       ),
     )
     .limit(1);

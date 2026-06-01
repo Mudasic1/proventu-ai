@@ -14,7 +14,7 @@ const syne = Syne({
 });
 
 export const metadata: Metadata = {
-  title: "SalesEasyAI | Put Your Revenue Work in Motion",
+  title: "SalesEasy | Put Your Revenue Work in Motion",
   description:
     "Turn your offer and lead list into campaigns, clear priorities, and follow-ups your team can approve before the day gets busy.",
 };

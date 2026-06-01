@@ -1,12 +1,12 @@
 import { Settings2 } from "lucide-react";
 
 import { BusinessProfileForm } from "@/components/onboarding/business-profile-form";
-import { requireWorkspacePageContext } from "@/lib/permissions/workspace";
+import { requirePermission } from "@/lib/permissions/rbac";
 import { updateWorkspaceProfileAction } from "@/server/actions/onboarding";
 import { getWorkspaceProfile } from "@/server/queries/workspaces";
 
 export default async function WorkspaceSettingsPage() {
-  const context = await requireWorkspacePageContext();
+  const context = await requirePermission("settings:read");
   const { profile, primaryOffer } = await getWorkspaceProfile(
     context.workspaceId,
   );

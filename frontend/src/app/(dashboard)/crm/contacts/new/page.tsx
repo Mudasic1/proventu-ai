@@ -1,9 +1,11 @@
 import { UserPlus } from "lucide-react";
 
 import { ContactForm } from "@/components/crm/contact-form";
+import { requirePermission } from "@/lib/permissions/rbac";
 import { createContactAction } from "@/server/actions/contacts";
 
-export default function NewContactPage() {
+export default async function NewContactPage() {
+  await requirePermission("contacts:write");
   return (
     <section className="max-w-3xl">
       <p className="section-kicker">CRM contacts</p>

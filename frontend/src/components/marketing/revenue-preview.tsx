@@ -9,7 +9,7 @@ import {
   CircleDollarSign,
   Clock3,
   Mail,
-  Sparkles,
+  Megaphone,
 } from "lucide-react";
 import { LazyMotion, MotionConfig, m } from "framer-motion";
 
@@ -36,7 +36,7 @@ const views = {
         icon: CalendarClock,
         title: "Book discovery with Reed",
         detail: "Asked about availability",
-        tag: "Reply ready",
+        tag: "Follow-up due",
         tone: "mint",
       },
       {
@@ -55,7 +55,7 @@ const views = {
     insight: "Your spring campaign is ready for a final review.",
     rows: [
       {
-        icon: Sparkles,
+        icon: Megaphone,
         title: "Launch announcement",
         detail: "LinkedIn and Instagram",
         tag: "2 drafts",
@@ -106,7 +106,7 @@ export function RevenuePreview() {
               </div>
               <div className="flex items-center gap-2 rounded-full border border-[#d8ff62]/25 bg-[#d8ff62]/10 px-3 py-2 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#d8ff62]">
                 <span className="size-1.5 rounded-full bg-[#d8ff62] shadow-[0_0_12px_#d8ff62]" />
-                Plan ready
+                Dashboard live
               </div>
             </div>
 
@@ -148,7 +148,7 @@ export function RevenuePreview() {
                       {view.total}
                     </p>
                     <p className="mt-2 text-xs leading-5 text-[#93a39d]">
-                      Prepared and waiting for your attention.
+                      Tracked and waiting for your attention.
                     </p>
                   </div>
                 </div>

@@ -4,7 +4,7 @@ import { Search, Upload, UserPlus } from "lucide-react";
 import { ContactList } from "@/components/crm/contact-list";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { requireWorkspacePageContext } from "@/lib/permissions/workspace";
+import { hasPermission, requirePermission } from "@/lib/permissions/rbac";
 import { listContacts } from "@/server/queries/contacts";
 
 type ContactsPageProps = {
@@ -12,9 +12,13 @@ type ContactsPageProps = {
 };
 
 export default async function ContactsPage({ searchParams }: ContactsPageProps) {
-  const context = await requireWorkspacePageContext();
+  const context = await requirePermission("contacts:read");
   const filters = await searchParams;
-  const contacts = await listContacts(context.workspaceId, filters);
+  const contacts = await listContacts(context.workspaceId, {
+    ...filters,
+    ownerUserId: context.role === "sales_rep" ? context.session.user.id : undefined,
+  });
+  const canWrite = hasPermission(context.role, "contacts:write");
 
   return (
     <section>
@@ -24,14 +28,14 @@ export default async function ContactsPage({ searchParams }: ContactsPageProps) 
           <h1 className="mt-3 font-display text-5xl font-bold tracking-[-0.09em]">Keep every lead within reach.</h1>
           <p className="mt-3 text-sm text-[#9eaea8]">{contacts.length} visible contacts in this workspace.</p>
         </div>
-        <div className="flex gap-2">
+        {canWrite ? <div className="flex gap-2">
           <Button asChild variant="outline" className="rounded-full border-white/[0.12] bg-white/[0.035] text-[#d5ddd9]">
             <Link href="/crm/contacts/import"><Upload />Import CSV</Link>
           </Button>
           <Button asChild className="rounded-full bg-[#d8ff62] font-bold text-[#10211c] hover:bg-[#e5ff92]">
             <Link href="/crm/contacts/new"><UserPlus />Add contact</Link>
           </Button>
-        </div>
+        </div> : null}
       </div>
 
       <form className="mt-7 grid gap-2 rounded-[20px] border border-white/[0.08] bg-white/[0.025] p-3 sm:grid-cols-[1fr_180px_auto]">

@@ -5,6 +5,7 @@ import { formatDate } from "@/lib/format";
 import { completeTaskAction } from "@/server/actions/pipeline";
 
 type TaskListProps = {
+  canWrite?: boolean;
   tasks: {
     id: string;
     title: string;
@@ -18,7 +19,7 @@ type TaskListProps = {
   }[];
 };
 
-export function TaskList({ tasks }: TaskListProps) {
+export function TaskList({ tasks, canWrite = true }: TaskListProps) {
   return (
     <div className="grid gap-2.5">
       {tasks.map((task) => (
@@ -33,7 +34,7 @@ export function TaskList({ tasks }: TaskListProps) {
             </p>
             <p className="mt-2 flex items-center gap-1 text-[11px] text-[#a8b6b1]"><Clock3 className="size-3.5" /> Due {formatDate(task.dueAt)}</p>
           </div>
-          {task.status !== "completed" ? (
+          {canWrite && task.status !== "completed" ? (
             <form action={completeTaskAction.bind(null, task.id)}>
               <Button variant="outline" className="rounded-full"><Check /> Complete</Button>
             </form>

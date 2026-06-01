@@ -1,11 +1,15 @@
 import { redirect } from "next/navigation";
-import { CircleCheck, Sparkles } from "lucide-react";
+import { CircleCheck, SkipForward, Sparkles } from "lucide-react";
 
 import { BrandMark } from "@/components/brand-mark";
 import { BusinessProfileForm } from "@/components/onboarding/business-profile-form";
+import { Button } from "@/components/ui/button";
 import { getCurrentSession } from "@/lib/auth-session";
 import { getWorkspaceContext } from "@/lib/permissions/workspace";
-import { createWorkspaceAction } from "@/server/actions/onboarding";
+import {
+  createWorkspaceAction,
+  skipWorkspaceSetupAction,
+} from "@/server/actions/onboarding";
 
 const outcomes = [
   "A workspace scoped to your account",
@@ -27,7 +31,7 @@ export default async function OnboardingPage() {
         <div className="flex items-center gap-2.5">
           <BrandMark />
           <span className="font-display text-lg font-bold tracking-[-0.06em]">
-            SalesEasy<span className="text-[#d8ff62]">AI</span>
+            Sales<span className="text-[#d8ff62]">Easy</span>
           </span>
         </div>
 
@@ -40,7 +44,7 @@ export default async function OnboardingPage() {
             </h1>
             <p className="mt-6 max-w-lg text-sm leading-7 text-[#a8b6b1]">
               Add the minimum business context required for CRM, pipeline, and
-              dashboard work. AI features remain intentionally out of this build.
+              dashboard work. Keep the business context clear for your team.
             </p>
             <div className="mt-7 grid gap-2.5">
               {outcomes.map((outcome) => (
@@ -67,6 +71,22 @@ export default async function OnboardingPage() {
               You can refine these details later from workspace settings.
             </p>
             <BusinessProfileForm action={createWorkspaceAction} />
+            <div className="mt-4 border-t border-white/[0.08] pt-4">
+              <form action={skipWorkspaceSetupAction}>
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  className="w-full rounded-full text-[#a8b6b1] hover:bg-white/[0.06] hover:text-[#f4f2ea]"
+                >
+                  <SkipForward className="size-4" />
+                  Skip for now
+                </Button>
+              </form>
+              <p className="mt-2 text-center text-xs leading-5 text-[#71817b]">
+                We will create a starter workspace. Add your business details later
+                from settings.
+              </p>
+            </div>
           </section>
         </div>
       </div>

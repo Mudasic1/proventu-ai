@@ -33,7 +33,7 @@ export function AuthShell({
           <Link href="/" className="flex w-fit items-center gap-2.5">
             <BrandMark />
             <span className="font-display text-[17px] font-bold tracking-[-0.06em]">
-              SalesEasy<span className="text-[#d8ff62]">AI</span>
+              Sales<span className="text-[#d8ff62]">Easy</span>
             </span>
           </Link>
 
@@ -71,7 +71,7 @@ export function AuthShell({
               <Link href="/" className="flex items-center gap-2.5">
                 <BrandMark />
                 <span className="font-display text-[17px] font-bold tracking-[-0.06em]">
-                  SalesEasy<span className="text-[#d8ff62]">AI</span>
+                  Sales<span className="text-[#d8ff62]">Easy</span>
                 </span>
               </Link>
               <Link
