@@ -109,7 +109,7 @@ export async function createCompany(context: MutationContext, input: CompanyInpu
     id: companyId,
     workspaceId: context.workspaceId,
     name: input.name,
-    website: input.domain,
+    website: input.website,
     email: input.email,
     phone: input.phone,
     industry: input.industry,
@@ -307,12 +307,21 @@ export async function addTeamMember(context: MutationContext, input: AddTeamMemb
   }
 
   const memberId = id();
-  await db.insert(workspaceMember).values({
-    id: memberId,
-    workspaceId: context.workspaceId,
-    userId: account.id,
-    role: input.role,
-  });
+  const inserted = await db
+    .insert(workspaceMember)
+    .values({
+      id: memberId,
+      workspaceId: context.workspaceId,
+      userId: account.id,
+      role: input.role,
+    })
+    .onConflictDoNothing({
+      target: [workspaceMember.workspaceId, workspaceMember.userId],
+    })
+    .returning({ id: workspaceMember.id });
+  if (!inserted.length) {
+    throw new AppError("CONFLICT", "That user is already a workspace member.");
+  }
   await logCreated(context, "workspace_member", memberId, `${input.email} added as ${input.role}`);
   return memberId;
 }

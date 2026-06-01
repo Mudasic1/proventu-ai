@@ -13,7 +13,19 @@ export default async function PipelinePage() {
   const canWrite = hasPermission(context.role, "pipeline:write");
   const ownerUserId = context.role === "sales_rep" ? context.session.user.id : undefined;
   const pipeline = await getDefaultPipeline(context.workspaceId);
-  if (!pipeline) return null;
+  if (!pipeline) {
+    return (
+      <div className="grid gap-5">
+        <EmptyState
+          title="No sales pipeline is configured"
+          description="This workspace does not have a default pipeline yet. Review workspace setup before adding deals."
+        />
+        <Link className="mx-auto text-sm font-bold text-[#d8ff62] hover:underline" href="/settings/workspace">
+          Review workspace setup
+        </Link>
+      </div>
+    );
+  }
   const [contacts, stages, deals] = await Promise.all([
     listContacts(context.workspaceId, { ownerUserId }),
     listPipelineStages(context.workspaceId, pipeline.id),
@@ -34,3 +46,6 @@ export default async function PipelinePage() {
     </div>
   );
 }
+import Link from "next/link";
+
+import { EmptyState } from "@/components/shared/module-ui";

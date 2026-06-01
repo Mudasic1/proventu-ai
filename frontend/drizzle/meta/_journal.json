@@ -29,6 +29,13 @@
       "when": 1780255023069,
       "tag": "0003_cloudy_ben_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780293929260,
+      "tag": "0004_sudden_white_tiger",
+      "breakpoints": true
     }
   ]
 }

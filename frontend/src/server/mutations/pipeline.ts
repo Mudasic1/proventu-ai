@@ -102,10 +102,21 @@ export async function moveDeal(
   if (stage.pipelineId !== record.pipelineId || stage.terminalKind) {
     throw new AppError("VALIDATION_ERROR", "Choose an active stage in this pipeline.");
   }
-  await db
+  const updated = await db
     .update(deal)
     .set({ stageId, lastActivityAt: new Date() })
-    .where(and(eq(deal.id, dealId), eq(deal.workspaceId, context.workspaceId)));
+    .where(
+      and(
+        eq(deal.id, dealId),
+        eq(deal.workspaceId, context.workspaceId),
+        eq(deal.status, "open"),
+        eq(deal.stageId, record.stageId),
+      ),
+    )
+    .returning({ id: deal.id });
+  if (!updated.length) {
+    throw new AppError("CONFLICT", "This deal changed before it could be moved.");
+  }
   await recordActivity({
     workspaceId: context.workspaceId,
     actorUserId: context.userId,
@@ -140,7 +151,7 @@ export async function closeDeal(
     .limit(1);
   if (!stage) throw new AppError("NOT_FOUND", "Closure stage not found.");
   const closedAt = new Date();
-  await db
+  const updated = await db
     .update(deal)
     .set({
       stageId: stage.id,
@@ -149,7 +160,17 @@ export async function closeDeal(
       lastActivityAt: closedAt,
       lostReason: outcome === "lost" ? lostReason : null,
     })
-    .where(and(eq(deal.id, dealId), eq(deal.workspaceId, context.workspaceId)));
+    .where(
+      and(
+        eq(deal.id, dealId),
+        eq(deal.workspaceId, context.workspaceId),
+        eq(deal.status, "open"),
+      ),
+    )
+    .returning({ id: deal.id });
+  if (!updated.length) {
+    throw new AppError("CONFLICT", "This deal is already closed.");
+  }
   await recordActivity({
     workspaceId: context.workspaceId,
     actorUserId: context.userId,
@@ -209,15 +230,19 @@ export async function completeFollowUpTask(
     .limit(1);
   if (!task) throw new AppError("NOT_FOUND", "Follow-up task not found.");
   if (task.status === "completed") return;
-  await db
+  const updated = await db
     .update(followUpTask)
     .set({ status: "completed", completedAt: new Date() })
     .where(
       and(
         eq(followUpTask.workspaceId, context.workspaceId),
         eq(followUpTask.id, taskId),
+        eq(followUpTask.status, task.status),
+        context.role === "sales_rep" ? eq(followUpTask.ownerUserId, context.userId) : undefined,
       ),
-    );
+    )
+    .returning({ id: followUpTask.id });
+  if (!updated.length) return;
   await recordActivity({
     workspaceId: context.workspaceId,
     actorUserId: context.userId,

@@ -55,7 +55,7 @@ export function PipelineBoard({ stages, deals, canWrite = true }: PipelineBoardP
                     {formatDate(deal.expectedCloseAt)}
                   </p>
                   {canWrite ? <form action={moveDealAction.bind(null, deal.id)} className="mt-3 flex gap-2">
-                    <select name="stageId" defaultValue={stage.id} className="min-w-0 flex-1 rounded-lg border border-white/[0.1] bg-[#10211c] px-2 text-xs">
+                    <select name="stageId" defaultValue={stage.id} aria-label={`Move ${deal.title} to stage`} className="min-w-0 flex-1 rounded-lg border border-white/[0.1] bg-[#10211c] px-2 text-xs">
                       {activeStages.map((option) => (
                         <option key={option.id} value={option.id}>{option.name}</option>
                       ))}

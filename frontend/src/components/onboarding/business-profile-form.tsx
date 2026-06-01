@@ -28,6 +28,7 @@ type BusinessProfileFormProps = {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
   defaults?: ProfileDefaults;
   mode?: "create" | "edit";
+  readOnly?: boolean;
 };
 
 function FieldError({
@@ -45,6 +46,7 @@ export function BusinessProfileForm({
   action,
   defaults,
   mode = "create",
+  readOnly = false,
 }: BusinessProfileFormProps) {
   const [state, formAction, pending] = useActionState(action, initialActionState);
 
@@ -64,6 +66,7 @@ export function BusinessProfileForm({
             defaultValue={defaults?.businessName}
             placeholder="Northstar Studio"
             required
+            disabled={readOnly}
           />
           <FieldError errors={state.fieldErrors} name="businessName" />
         </div>
@@ -75,6 +78,7 @@ export function BusinessProfileForm({
             defaultValue={defaults?.industry}
             placeholder="Web design services"
             required
+            disabled={readOnly}
           />
           <FieldError errors={state.fieldErrors} name="industry" />
         </div>
@@ -88,6 +92,7 @@ export function BusinessProfileForm({
           defaultValue={defaults?.targetAudience}
           placeholder="Small service businesses that need a clearer website and lead flow."
           required
+          disabled={readOnly}
         />
         <FieldError errors={state.fieldErrors} name="targetAudience" />
       </div>
@@ -101,6 +106,7 @@ export function BusinessProfileForm({
             defaultValue={defaults?.brandVoice}
             placeholder="Clear, expert, practical"
             required
+            disabled={readOnly}
           />
           <FieldError errors={state.fieldErrors} name="brandVoice" />
         </div>
@@ -112,6 +118,7 @@ export function BusinessProfileForm({
             defaultValue={defaults?.offerName}
             placeholder="Website growth sprint"
             required
+            disabled={readOnly}
           />
           <FieldError errors={state.fieldErrors} name="offerName" />
         </div>
@@ -125,6 +132,7 @@ export function BusinessProfileForm({
           defaultValue={defaults?.productsServices}
           placeholder="Conversion-focused websites, landing pages, and optimization."
           required
+          disabled={readOnly}
         />
         <FieldError errors={state.fieldErrors} name="productsServices" />
       </div>
@@ -137,6 +145,7 @@ export function BusinessProfileForm({
           defaultValue={defaults?.offerDescription}
           placeholder="A two-week sprint that includes strategy, design, and launch support."
           required
+          disabled={readOnly}
         />
         <FieldError errors={state.fieldErrors} name="offerDescription" />
       </div>
@@ -149,11 +158,12 @@ export function BusinessProfileForm({
           defaultValue={defaults?.salesProcess}
           placeholder="Lead arrives, discovery call, proposal, negotiation, close."
           required
+          disabled={readOnly}
         />
         <FieldError errors={state.fieldErrors} name="salesProcess" />
       </div>
 
-      <Button
+      {readOnly ? null : <Button
         type="submit"
         size="lg"
         className="h-11 rounded-full bg-[#d8ff62] px-5 font-bold text-[#10211c] hover:bg-[#e5ff92]"
@@ -171,7 +181,7 @@ export function BusinessProfileForm({
           : mode === "create"
             ? "Create revenue workspace"
             : "Save workspace profile"}
-      </Button>
+      </Button>}
     </form>
   );
 }

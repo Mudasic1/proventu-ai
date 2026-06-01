@@ -7,7 +7,7 @@ const optionalDate = z.string().trim().optional().default("");
 
 export const companySchema = z.object({
   name: z.string().trim().min(1, "Company name is required.").max(160),
-  domain: z.string().trim().max(200).optional().default(""),
+  website: z.string().trim().max(200).optional().default(""),
   email: z.string().trim().email().optional().or(z.literal("")).default(""),
   phone: z.string().trim().max(80).optional().default(""),
   industry: z.string().trim().max(120).optional().default(""),

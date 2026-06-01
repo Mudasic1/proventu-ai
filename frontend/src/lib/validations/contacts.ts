@@ -4,7 +4,7 @@ const optionalEmail = z
   .string()
   .trim()
   .transform((value) => value || undefined)
-  .pipe(z.string().email("Enter a valid email address.").optional());
+  .pipe(z.email("Enter a valid email address.").optional());
 
 export const contactSchema = z.object({
   firstName: z.string().trim().min(1, "Enter a first name."),

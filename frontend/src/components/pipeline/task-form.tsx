@@ -18,6 +18,17 @@ type TaskFormProps = {
   defaultContactId?: string | null;
 };
 
+function FieldError({
+  errors,
+  name,
+}: {
+  errors?: Record<string, string[] | undefined>;
+  name: string;
+}) {
+  const message = errors?.[name]?.[0];
+  return message ? <p className="text-xs text-red-200">{message}</p> : null;
+}
+
 export function TaskForm({ contacts, deals, defaultDealId, defaultContactId }: TaskFormProps) {
   const [state, formAction, pending] = useActionState(
     createTaskAction,
@@ -32,6 +43,7 @@ export function TaskForm({ contacts, deals, defaultDealId, defaultContactId }: T
       <div className="grid gap-2">
         <Label htmlFor="title">Follow-up</Label>
         <Input id="title" name="title" required placeholder="Call to confirm proposal review" />
+        <FieldError errors={state.fieldErrors} name="title" />
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="grid gap-2">
@@ -42,6 +54,7 @@ export function TaskForm({ contacts, deals, defaultDealId, defaultContactId }: T
               <option key={contact.id} value={contact.id}>{contact.firstName} {contact.lastName}</option>
             ))}
           </select>
+          <FieldError errors={state.fieldErrors} name="contactId" />
         </div>
         <div className="grid gap-2">
           <Label htmlFor="dealId">Deal</Label>
@@ -49,12 +62,14 @@ export function TaskForm({ contacts, deals, defaultDealId, defaultContactId }: T
             <option value="">Unassigned</option>
             {deals.map((deal) => <option key={deal.id} value={deal.id}>{deal.title}</option>)}
           </select>
+          <FieldError errors={state.fieldErrors} name="dealId" />
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="grid gap-2">
           <Label htmlFor="dueAt">Due date</Label>
           <Input id="dueAt" name="dueAt" type="date" required />
+          <FieldError errors={state.fieldErrors} name="dueAt" />
         </div>
         <div className="grid gap-2">
           <Label htmlFor="priority">Priority</Label>
@@ -63,11 +78,13 @@ export function TaskForm({ contacts, deals, defaultDealId, defaultContactId }: T
             <option value="medium">Medium</option>
             <option value="high">High</option>
           </select>
+          <FieldError errors={state.fieldErrors} name="priority" />
         </div>
       </div>
       <div className="grid gap-2">
         <Label htmlFor="notes">Notes</Label>
         <Textarea id="notes" name="notes" />
+        <FieldError errors={state.fieldErrors} name="notes" />
       </div>
       <Button className="h-11 rounded-full bg-[#d8ff62] px-5 font-bold text-[#10211c] hover:bg-[#e5ff92]" disabled={pending}>
         {pending ? <LoaderCircle className="animate-spin" /> : <Plus />}

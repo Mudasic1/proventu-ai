@@ -21,7 +21,7 @@ export function ContactImportForm() {
   }, [state]);
 
   return (
-    <form action={formAction} className="grid gap-4">
+    <form action={formAction} encType="multipart/form-data" className="grid gap-4">
       <div className="grid gap-2">
         <Label htmlFor="file">CSV contact file</Label>
         <input id="file" name="file" type="file" accept=".csv,text/csv" required className="rounded-xl border border-dashed border-white/[0.14] bg-white/[0.035] p-4 text-sm" />

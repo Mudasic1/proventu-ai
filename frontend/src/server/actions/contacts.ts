@@ -9,7 +9,10 @@ import {
 } from "@/lib/errors/app-error";
 import { requirePermission } from "@/lib/permissions/rbac";
 import { contactSchema, noteSchema } from "@/lib/validations/contacts";
-import { importContacts } from "@/server/mutations/contact-imports";
+import {
+  importContacts,
+  MAX_IMPORT_BYTES,
+} from "@/server/mutations/contact-imports";
 import {
   addContactNote,
   createContact,
@@ -106,6 +109,9 @@ export async function importContactsAction(
   }
   if (!file.name.toLowerCase().endsWith(".csv")) {
     return { status: "error", message: "Upload a CSV file." };
+  }
+  if (file.size > MAX_IMPORT_BYTES) {
+    return { status: "error", message: "Upload a CSV file smaller than 1 MB." };
   }
   try {
     const context = await requirePermission("contacts:write");

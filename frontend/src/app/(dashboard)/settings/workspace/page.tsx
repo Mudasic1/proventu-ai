@@ -1,7 +1,7 @@
 import { Settings2 } from "lucide-react";
 
 import { BusinessProfileForm } from "@/components/onboarding/business-profile-form";
-import { requirePermission } from "@/lib/permissions/rbac";
+import { hasPermission, requirePermission } from "@/lib/permissions/rbac";
 import { updateWorkspaceProfileAction } from "@/server/actions/onboarding";
 import { getWorkspaceProfile } from "@/server/queries/workspaces";
 
@@ -10,6 +10,7 @@ export default async function WorkspaceSettingsPage() {
   const { profile, primaryOffer } = await getWorkspaceProfile(
     context.workspaceId,
   );
+  const canWrite = hasPermission(context.role, "settings:write");
 
   return (
     <section>
@@ -30,6 +31,7 @@ export default async function WorkspaceSettingsPage() {
         <BusinessProfileForm
           action={updateWorkspaceProfileAction}
           mode="edit"
+          readOnly={!canWrite}
           defaults={{
             businessName: profile?.businessName,
             industry: profile?.industry,

@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { initialActionState } from "@/lib/errors/app-error";
 import { createDealAction } from "@/server/actions/pipeline";
@@ -41,22 +42,26 @@ export function DealForm({ contacts, stages }: DealFormProps) {
       <div className="grid gap-4 md:grid-cols-3">
         <div className="grid gap-2">
           <Label htmlFor="contactId">Contact</Label>
-          <select id="contactId" name="contactId" className="h-11 rounded-xl border border-white/[0.11] bg-[#10211c] px-3 text-sm">
-            <option value="">Unassigned</option>
-            {contacts.map((contact) => (
-              <option key={contact.id} value={contact.id}>
-                {contact.firstName} {contact.lastName}
-              </option>
-            ))}
-          </select>
+          <Select
+            id="contactId"
+            name="contactId"
+            placeholder="Unassigned"
+            options={contacts.map((contact) => ({
+              label: `${contact.firstName} ${contact.lastName}`,
+              value: contact.id,
+            }))}
+          />
         </div>
         <div className="grid gap-2">
           <Label htmlFor="stageId">Starting stage</Label>
-          <select id="stageId" name="stageId" className="h-11 rounded-xl border border-white/[0.11] bg-[#10211c] px-3 text-sm">
-            {stages.filter((stage) => !stage.terminalKind).map((stage) => (
-              <option key={stage.id} value={stage.id}>{stage.name}</option>
-            ))}
-          </select>
+          <Select
+            id="stageId"
+            name="stageId"
+            required
+            options={stages
+              .filter((stage) => !stage.terminalKind)
+              .map((stage) => ({ label: stage.name, value: stage.id }))}
+          />
         </div>
         <div className="grid gap-2">
           <Label htmlFor="expectedCloseAt">Expected close</Label>

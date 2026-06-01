@@ -2,7 +2,8 @@ export function formatCurrency(valueCents: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
-    maximumFractionDigits: 0,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(valueCents / 100);
 }
 
@@ -12,5 +13,6 @@ export function formatDate(value: Date | string | null | undefined) {
     month: "short",
     day: "numeric",
     year: "numeric",
+    timeZone: "UTC",
   }).format(new Date(value));
 }

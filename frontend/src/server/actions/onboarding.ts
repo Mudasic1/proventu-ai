@@ -45,7 +45,7 @@ export async function createWorkspaceAction(
 
 export async function skipWorkspaceSetupAction() {
   const session = await requireCurrentSession();
-  const displayName = session.user.name.trim();
+  const displayName = (session.user.name ?? "").trim();
   const businessName = displayName ? `${displayName}'s Workspace` : "My Workspace";
 
   await createWorkspaceForUser(session.user.id, {

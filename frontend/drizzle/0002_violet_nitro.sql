@@ -1,3 +1,6 @@
+-- This migration adds manual module foundations only. Credit wallet, ledger,
+-- reservation, and AI job execution tables are planned in
+-- specs/002-subscription-credit-jobs/tasks.md.
 CREATE TABLE "automation" (
 	"id" text PRIMARY KEY NOT NULL,
 	"workspace_id" text NOT NULL,

@@ -227,6 +227,7 @@ export const contact = pgTable(
   },
   (table) => [
     index("contact_workspace_idx").on(table.workspaceId),
+    index("contact_workspace_owner_idx").on(table.workspaceId, table.ownerUserId),
     index("contact_workspace_email_idx").on(
       table.workspaceId,
       table.normalizedEmail,
@@ -345,6 +346,7 @@ export const deal = pgTable(
   },
   (table) => [
     index("deal_workspace_idx").on(table.workspaceId),
+    index("deal_workspace_owner_idx").on(table.workspaceId, table.ownerUserId),
     index("deal_workspace_stage_idx").on(table.workspaceId, table.stageId),
   ],
 );
@@ -379,6 +381,7 @@ export const followUpTask = pgTable(
   },
   (table) => [
     index("follow_up_task_workspace_idx").on(table.workspaceId),
+    index("follow_up_task_workspace_owner_idx").on(table.workspaceId, table.ownerUserId),
     index("follow_up_task_due_idx").on(table.workspaceId, table.status, table.dueAt),
   ],
 );

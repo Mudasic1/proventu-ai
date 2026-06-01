@@ -32,7 +32,7 @@ export function ToastNotice() {
     toast.success(messages[messageKey]);
     const next = new URLSearchParams(params.toString());
     next.delete("toast");
-    router.replace(next.size ? `?${next}` : "?");
+    router.replace(next.size ? `?${next}` : window.location.pathname);
   }, [messageKey, params, router]);
 
   return null;

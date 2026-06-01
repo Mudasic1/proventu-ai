@@ -32,7 +32,7 @@ export default async function CompaniesPage() {
           <h2 className="font-display text-2xl font-bold tracking-[-0.07em]">Add company</h2>
           <form action={createCompanyAction} className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <input required name="name" placeholder="Company name" className={fieldClassName} />
-            <input name="domain" placeholder="Website" className={fieldClassName} />
+            <input name="website" placeholder="Website" className={fieldClassName} />
             <input name="email" type="email" placeholder="Account email" className={fieldClassName} />
             <input name="phone" placeholder="Phone" className={fieldClassName} />
             <input name="industry" placeholder="Industry" className={fieldClassName} />
