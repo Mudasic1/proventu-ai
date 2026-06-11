@@ -1,8 +1,11 @@
 import "server-only";
 
-import { drizzle } from "drizzle-orm/neon-http";
+import { Pool } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-serverless";
 
 import * as schema from "@/lib/db/schema";
 import { serverEnv } from "@/lib/env/server";
 
-export const db = drizzle(serverEnv.DATABASE_URI, { schema });
+const pool = new Pool({ connectionString: serverEnv.DATABASE_URI });
+export const db = drizzle(pool, { schema });
+

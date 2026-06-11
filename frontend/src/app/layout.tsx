@@ -1,17 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Manrope, Syne } from "next/font/google";
 import { Toaster } from "react-hot-toast";
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-manrope",
-});
-
-const syne = Syne({
-  subsets: ["latin"],
-  variable: "--font-syne",
-});
 
 export const metadata: Metadata = {
   title: "SalesEasy | Put Your Revenue Work in Motion",
@@ -28,7 +17,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`h-full antialiased ${manrope.variable} ${syne.variable}`}
+      className="h-full antialiased"
     >
       <body className="min-h-full">
         {children}

@@ -7,6 +7,7 @@ import { sendAuthEmail } from "@/lib/auth-email";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
 import { serverEnv } from "@/lib/env/server";
+import { GOOGLE_CRM_SCOPES } from "@/lib/google/scopes";
 
 export const auth = betterAuth({
   appName: "SalesEasy",
@@ -17,6 +18,18 @@ export const auth = betterAuth({
     schema,
   }),
   trustedOrigins: [serverEnv.BETTER_AUTH_URL],
+  socialProviders:
+    serverEnv.GOOGLE_CLIENT_ID && serverEnv.GOOGLE_CLIENT_SECRET
+      ? {
+          google: {
+            clientId: serverEnv.GOOGLE_CLIENT_ID,
+            clientSecret: serverEnv.GOOGLE_CLIENT_SECRET,
+            accessType: "offline",
+            prompt: "select_account consent",
+            scope: ["openid", "email", "profile", ...GOOGLE_CRM_SCOPES],
+          },
+        }
+      : undefined,
   emailAndPassword: {
     enabled: true,
     autoSignIn: false,

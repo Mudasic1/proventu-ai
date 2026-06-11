@@ -58,6 +58,8 @@ body {
 }
 
 :root {
+  --font-manrope: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-syne: "Arial Black", Inter, "Segoe UI", Roboto, Arial, sans-serif;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -90,6 +92,17 @@ body {
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --dashboard-bg: #07110f;
+  --dashboard-sidebar: rgba(8, 21, 17, 0.92);
+  --dashboard-fg: #f4f2ea;
+  --dashboard-muted: #aebbb6;
+  --dashboard-soft: #71817b;
+  --dashboard-subtle: #5f716a;
+  --dashboard-icon: #82928c;
+  --dashboard-border: rgba(255, 255, 255, 0.08);
+  --dashboard-hover: rgba(255, 255, 255, 0.055);
+  --dashboard-control: rgba(255, 255, 255, 0.025);
+  --dashboard-accent: #d8ff62;
 }
 
 .dark {
@@ -124,6 +137,31 @@ body {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --dashboard-bg: #07110f;
+  --dashboard-sidebar: rgba(8, 21, 17, 0.92);
+  --dashboard-fg: #f4f2ea;
+  --dashboard-muted: #aebbb6;
+  --dashboard-soft: #71817b;
+  --dashboard-subtle: #5f716a;
+  --dashboard-icon: #82928c;
+  --dashboard-border: rgba(255, 255, 255, 0.08);
+  --dashboard-hover: rgba(255, 255, 255, 0.055);
+  --dashboard-control: rgba(255, 255, 255, 0.025);
+  --dashboard-accent: #d8ff62;
+}
+
+.light {
+  --dashboard-bg: #f4f2ea;
+  --dashboard-sidebar: rgba(255, 253, 244, 0.9);
+  --dashboard-fg: #10211c;
+  --dashboard-muted: #4d615a;
+  --dashboard-soft: #6d7c76;
+  --dashboard-subtle: #8a9993;
+  --dashboard-icon: #6d7c76;
+  --dashboard-border: rgba(16, 33, 28, 0.12);
+  --dashboard-hover: rgba(16, 33, 28, 0.065);
+  --dashboard-control: rgba(16, 33, 28, 0.035);
+  --dashboard-accent: #42760d;
 }
 
 @layer base {

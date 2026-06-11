@@ -21,6 +21,7 @@ import {
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { BrandMark } from "@/components/brand-mark";
+import { ThemeToggle } from "@/components/dashboard/theme-toggle";
 import { ToastNotice } from "@/components/dashboard/toast-notice";
 import { hasPermission, type Permission } from "@/lib/permissions/rbac";
 
@@ -79,28 +80,31 @@ export function DashboardShell({ children, user, workspaceName, role }: Dashboar
     .filter((group) => group.items.length);
 
   return (
-    <main className="min-h-screen bg-[#07110f] text-[#f4f2ea]">
+    <main className="min-h-screen bg-[var(--dashboard-bg)] text-[var(--dashboard-fg)] transition-colors duration-300">
       <Suspense><ToastNotice /></Suspense>
       <div className="ambient-grid pointer-events-none fixed inset-0 opacity-45" />
       <div className="relative z-10 mx-auto min-h-screen max-w-[1540px] lg:grid lg:grid-cols-[248px_1fr]">
-        <aside className="border-b border-white/[0.08] bg-[#081511]/92 px-4 py-4 backdrop-blur-xl lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:overflow-hidden lg:border-b-0 lg:border-r lg:px-3 lg:py-5">
+        <aside className="border-b border-[var(--dashboard-border)] bg-[var(--dashboard-sidebar)] px-4 py-4 backdrop-blur-xl transition-colors duration-300 lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col lg:overflow-hidden lg:border-b-0 lg:border-r lg:px-3 lg:py-5">
           <div className="flex items-center justify-between gap-4 px-1 lg:px-2">
             <Link href="/dashboard" className="flex items-center gap-2.5">
               <BrandMark />
-              <span className="font-display text-[17px] font-bold tracking-[-0.06em]">Sales<span className="text-[#d8ff62]">Easy</span></span>
+              <span className="font-display text-[17px] font-bold tracking-[-0.06em] text-[var(--dashboard-fg)]">Sales<span className="text-[var(--dashboard-accent)]">Easy</span></span>
             </Link>
-            <div className="lg:hidden"><SignOutButton /></div>
+            <div className="flex items-center gap-2 lg:hidden">
+              <div className="w-32"><ThemeToggle /></div>
+              <SignOutButton />
+            </div>
           </div>
           <nav className="mt-4 flex gap-1 overflow-x-auto pb-1 lg:mt-8 lg:min-h-0 lg:flex-1 lg:grid lg:content-start lg:gap-6 lg:overflow-x-hidden lg:overflow-y-auto lg:pb-4 lg:pr-1 [scrollbar-color:#344b43_transparent] [scrollbar-width:thin]">
             {groups.map((group) => (
               <div key={group.label} className="flex shrink-0 gap-1 lg:grid">
-                <p className="hidden px-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[#5f716a] lg:block">{group.label}</p>
+                <p className="hidden px-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-[var(--dashboard-subtle)] lg:block">{group.label}</p>
                 <div className="flex gap-1 lg:mt-2 lg:grid lg:gap-0.5">
                   {group.items.map((item) => {
                     const Icon = item.icon;
                     return (
-                      <Link key={item.href} href={item.href} className="flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-[#aebbb6] transition hover:bg-white/[0.055] hover:text-[#e5ff92]">
-                        <Icon className="size-4 text-[#82928c]" />
+                      <Link key={item.href} href={item.href} className="flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold text-[var(--dashboard-muted)] transition hover:bg-[var(--dashboard-hover)] hover:text-[var(--dashboard-accent)]">
+                        <Icon className="size-4 text-[var(--dashboard-icon)]" />
                         {item.label}
                       </Link>
                     );
@@ -109,11 +113,14 @@ export function DashboardShell({ children, user, workspaceName, role }: Dashboar
               </div>
             ))}
           </nav>
-          <div className="mt-auto hidden shrink-0 border-t border-white/[0.08] px-2 pt-4 lg:block">
-            <p className="truncate text-xs font-bold text-[#dce4e1]">{user.name}</p>
-            <p className="mt-1 truncate text-[11px] text-[#71817b]">{workspaceName}</p>
-            <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#d8ff62]">{role.replaceAll("_", " ")}</p>
+          <div className="mt-auto hidden shrink-0 border-t border-[var(--dashboard-border)] px-2 pt-4 lg:block">
+            <ThemeToggle />
+            <div className="mt-4">
+            <p className="truncate text-xs font-bold text-[var(--dashboard-fg)]">{user.name}</p>
+            <p className="mt-1 truncate text-[11px] text-[var(--dashboard-soft)]">{workspaceName}</p>
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--dashboard-accent)]">{role.replaceAll("_", " ")}</p>
             <div className="mt-3"><SignOutButton /></div>
+            </div>
           </div>
         </aside>
         <div className="min-w-0 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</div>

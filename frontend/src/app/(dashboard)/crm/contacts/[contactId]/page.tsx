@@ -6,6 +6,7 @@ import { ContactTimeline } from "@/components/crm/contact-timeline";
 import { hasPermission, requirePermission } from "@/lib/permissions/rbac";
 import { updateContactAction } from "@/server/actions/contacts";
 import { getContact, getContactActivity } from "@/server/queries/contacts";
+import { getGoogleIntegrationStatus } from "@/server/queries/google-integrations";
 
 type ContactDetailPageProps = { params: Promise<{ contactId: string }> };
 
@@ -13,9 +14,10 @@ export default async function ContactDetailPage({ params }: ContactDetailPagePro
   const { contactId } = await params;
   const context = await requirePermission("contacts:read");
   const canWrite = hasPermission(context.role, "contacts:write");
-  const [record, activity] = await Promise.all([
+  const [record, activity, googleStatus] = await Promise.all([
     getContact(context.workspaceId, contactId, context.role === "sales_rep" ? context.session.user.id : undefined),
     getContactActivity(context.workspaceId, contactId),
+    getGoogleIntegrationStatus(context.session.user.id),
   ]);
   if (!record) notFound();
   const update = updateContactAction.bind(null, contactId);
@@ -50,7 +52,13 @@ export default async function ContactDetailPage({ params }: ContactDetailPagePro
             <History className="size-4" />
             Activity timeline
           </p>
-          <ContactTimeline contactId={contactId} activity={activity} canWrite={canWrite} />
+          <ContactTimeline
+            contactId={contactId}
+            activity={activity}
+            contactEmail={record.email}
+            googleStatus={googleStatus}
+            canWrite={canWrite}
+          />
         </div>
       </div>
     </section>

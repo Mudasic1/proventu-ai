@@ -1,0 +1,1 @@
+"""SalesEasyAI supervised AI service."""

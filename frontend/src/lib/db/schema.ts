@@ -460,6 +460,49 @@ export const campaign = pgTable(
   ],
 );
 
+export const campaignAiRequest = pgTable(
+  "campaign_ai_request",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    campaignId: text("campaign_id")
+      .notNull()
+      .references(() => campaign.id, { onDelete: "cascade" }),
+    offerId: text("offer_id")
+      .notNull()
+      .references(() => offer.id, { onDelete: "restrict" }),
+    requestKey: text("request_key").notNull(),
+    aiRunId: text("ai_run_id"),
+    goal: text("goal").notNull(),
+    targetAudience: text("target_audience").notNull(),
+    summary: text("summary").default("").notNull(),
+    recommendedAngle: text("recommended_angle").default("").notNull(),
+    status: text("status").default("processing").notNull(),
+    safeErrorMessage: text("safe_error_message"),
+    createdByUserId: text("created_by_user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("campaign_ai_request_workspace_key_idx").on(
+      table.workspaceId,
+      table.requestKey,
+    ),
+    index("campaign_ai_request_campaign_idx").on(
+      table.workspaceId,
+      table.campaignId,
+      table.createdAt,
+    ),
+  ],
+);
+
 export const socialPost = pgTable(
   "social_post",
   {
@@ -473,6 +516,8 @@ export const socialPost = pgTable(
     platform: text("platform").notNull(),
     content: text("content").notNull(),
     status: text("status").default("draft").notNull(),
+    generatedByAi: boolean("generated_by_ai").default(false).notNull(),
+    sourceAiRunId: text("source_ai_run_id"),
     scheduledAt: timestamp("scheduled_at"),
     publishedAt: timestamp("published_at"),
     createdByUserId: text("created_by_user_id").references(() => user.id, {
@@ -505,6 +550,8 @@ export const emailCampaign = pgTable(
     previewText: text("preview_text").default("").notNull(),
     body: text("body").notNull(),
     status: text("status").default("draft").notNull(),
+    generatedByAi: boolean("generated_by_ai").default(false).notNull(),
+    sourceAiRunId: text("source_ai_run_id"),
     scheduledAt: timestamp("scheduled_at"),
     sentAt: timestamp("sent_at"),
     createdByUserId: text("created_by_user_id").references(() => user.id, {
@@ -518,6 +565,46 @@ export const emailCampaign = pgTable(
   },
   (table) => [
     index("email_campaign_workspace_idx").on(table.workspaceId, table.status),
+  ],
+);
+
+export const contentApproval = pgTable(
+  "content_approval",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    campaignId: text("campaign_id")
+      .notNull()
+      .references(() => campaign.id, { onDelete: "cascade" }),
+    aiRequestId: text("ai_request_id")
+      .notNull()
+      .references(() => campaignAiRequest.id, { onDelete: "cascade" }),
+    draftType: text("draft_type").notNull(),
+    draftId: text("draft_id").notNull(),
+    status: text("status").default("pending").notNull(),
+    riskFlags: jsonb("risk_flags")
+      .$type<Array<{ code: string; severity: string; message: string }>>()
+      .default([])
+      .notNull(),
+    reviewedByUserId: text("reviewed_by_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    reviewedAt: timestamp("reviewed_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("content_approval_workspace_status_idx").on(
+      table.workspaceId,
+      table.status,
+      table.createdAt,
+    ),
+    uniqueIndex("content_approval_draft_idx").on(table.draftType, table.draftId),
   ],
 );
 
