@@ -1,5 +1,6 @@
 import "server-only";
 
+import { parseLocalToUtc } from "@/lib/date-utils";
 import {
   createGoogleCalendarEvent,
   getGoogleAccessForUser,
@@ -10,6 +11,7 @@ import {
 import type { CrmActivityInput } from "@/lib/validations/crm-activities";
 import { recordActivity } from "@/server/mutations/activity";
 import { getContact } from "@/server/queries/contacts";
+import { getWorkspaceSettings } from "@/server/queries/workspace-modules";
 import { AppError } from "@/lib/errors/app-error";
 
 type MutationContext = { workspaceId: string; userId: string; role: string };
@@ -39,19 +41,22 @@ export async function createCrmActivity(
   );
   if (!contact) throw new AppError("NOT_FOUND", "Contact not found.");
 
+  const settings = await getWorkspaceSettings(context.workspaceId);
+  const tz = settings?.timezone || "UTC";
+  const scheduledDate = input.scheduledAt ? parseLocalToUtc(input.scheduledAt, tz) : null;
+
   const recipientEmail = input.attendeeEmail || contact.email || undefined;
   const metadata: Record<string, unknown> = {
     type: input.type,
     outcome: input.outcome,
-    scheduledAt: input.scheduledAt,
+    scheduledAt: scheduledDate?.toISOString() ?? null,
     durationMinutes: input.durationMinutes,
     attendeeEmail: recipientEmail,
     google: { calendar: "not_requested", gmail: "not_requested" },
   };
 
   if (input.syncToGoogleCalendar) {
-    const scheduledAt = input.scheduledAt ? new Date(input.scheduledAt) : null;
-    if (!scheduledAt || Number.isNaN(scheduledAt.getTime())) {
+    if (!scheduledDate || Number.isNaN(scheduledDate.getTime())) {
       throw new AppError("VALIDATION_ERROR", "Choose a valid meeting time.");
     }
     const access = await getGoogleAccessForUser(context.userId, [
@@ -62,8 +67,8 @@ export async function createCrmActivity(
       accessToken: access.accessToken,
       title: input.subject,
       description: input.body,
-      start: scheduledAt,
-      end: new Date(scheduledAt.getTime() + duration * 60_000),
+      start: scheduledDate,
+      end: new Date(scheduledDate.getTime() + duration * 60_000),
       attendeeEmail: recipientEmail,
     });
     metadata.google = {

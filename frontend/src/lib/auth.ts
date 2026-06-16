@@ -7,10 +7,9 @@ import { sendAuthEmail } from "@/lib/auth-email";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
 import { serverEnv } from "@/lib/env/server";
-import { GOOGLE_CRM_SCOPES } from "@/lib/google/scopes";
 
 export const auth = betterAuth({
-  appName: "SalesEasy",
+  appName: "Proventu AI",
   baseURL: serverEnv.BETTER_AUTH_URL,
   secret: serverEnv.BETTER_AUTH_SECRET,
   database: drizzleAdapter(db, {
@@ -26,7 +25,6 @@ export const auth = betterAuth({
             clientSecret: serverEnv.GOOGLE_CLIENT_SECRET,
             accessType: "offline",
             prompt: "select_account consent",
-            scope: ["openid", "email", "profile", ...GOOGLE_CRM_SCOPES],
           },
         }
       : undefined,
@@ -41,8 +39,8 @@ export const auth = betterAuth({
       await sendAuthEmail({
         kind: "password-reset",
         to: user.email,
-        subject: "Reset your SalesEasy password",
-        text: `Reset your SalesEasy password using this secure link: ${url}`,
+        subject: "Reset your Proventu AI password",
+        text: `Reset your Proventu AI password using this secure link: ${url}`,
         url,
       });
     },
@@ -76,7 +74,7 @@ export const auth = betterAuth({
     storeIdentifier: "hashed",
   },
   advanced: {
-    cookiePrefix: "saleseasyai",
+    cookiePrefix: "proventuai",
     defaultCookieAttributes: {
       httpOnly: true,
       sameSite: "lax",

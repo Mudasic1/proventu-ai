@@ -1,14 +1,55 @@
-import { CreditCard } from "lucide-react";
-
-import { EmptyState, PageHeader, Panel, StatusBadge } from "@/components/shared/module-ui";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { BillingSettings } from "@/components/billing/billing-settings";
+import { isStripeBillingConfigured } from "@/lib/billing/stripe-client";
+import { PageHeader } from "@/components/shared/module-ui";
 import { requirePermission } from "@/lib/permissions/rbac";
-import { getBillingSummary } from "@/server/queries/workspace-modules";
+import { getBillingDashboard } from "@/server/queries/billing";
+import { reconcileStripeCheckoutReturn } from "@/server/services/stripe-event-processor";
 
-export default async function BillingPage() {
+type BillingPageProps = {
+  searchParams: Promise<{
+    checkout?: string;
+    top_up?: string;
+    session_id?: string;
+  }>;
+};
+
+export default async function BillingPage({ searchParams }: BillingPageProps) {
   const context = await requirePermission("billing:read");
-  const billing = await getBillingSummary(context.workspaceId);
-  return <div className="grid gap-5"><PageHeader kicker="Billing" title="Keep subscription status visible to workspace admins." description="The billing record foundation is ready for a payment-provider integration. Checkout and webhook handling are not connected yet." />
-    <Panel>{billing ? <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-center"><div><p className="section-kicker">Current subscription</p><h2 className="mt-3 font-display text-4xl font-bold tracking-[-0.08em]">{billing.planName}</h2><p className="mt-2 text-sm text-[#9eaea8]">{formatCurrency(billing.priceCents)} / {billing.interval}</p>{billing.renewsAt ? <p className="mt-1 text-xs text-[#71817b]">Renews {formatDate(billing.renewsAt)}</p> : null}</div><div className="flex items-center gap-3"><CreditCard className="size-5 text-[#d8ff62]" /><StatusBadge value={billing.status} /></div></div> : <EmptyState title="No subscription record" description="Create billing plans and connect checkout when payment-provider integration is scheduled." />}</Panel>
-  </div>;
+  const params = await searchParams;
+
+  if (
+    params.session_id &&
+    (params.checkout === "success" || params.top_up === "success")
+  ) {
+    try {
+      await reconcileStripeCheckoutReturn({
+        workspaceId: context.workspaceId,
+        sessionId: params.session_id,
+      });
+    } catch (error) {
+      console.error("Stripe checkout return reconciliation failed", error);
+    }
+  }
+
+  const billing = await getBillingDashboard(context.workspaceId);
+
+  return (
+    <div className="grid gap-5">
+      <PageHeader
+        kicker="Billing"
+        title="Manage subscription credits and Stripe billing."
+        description="Hosted Checkout, billing portal access, payment history, and credit grants are reconciled from verified Stripe events."
+      />
+      <BillingSettings
+        isOwner={context.role === "owner"}
+        stripeConfigured={isStripeBillingConfigured()}
+        plans={billing.plans}
+        topUps={billing.topUps}
+        subscription={billing.subscription}
+        wallet={billing.wallet}
+        payments={billing.payments}
+        ledger={billing.ledger}
+      />
+    </div>
+  );
 }

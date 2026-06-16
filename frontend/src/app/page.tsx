@@ -87,12 +87,12 @@ export default function Home() {
         >
           <Link
             href="/"
-            aria-label="SalesEasy home"
+            aria-label="Proventu AI home"
             className="flex items-center gap-2.5 rounded-xl px-1 py-1"
           >
             <BrandMark />
             <span className="font-display text-[17px] font-bold tracking-[-0.06em]">
-              Sales<span className="text-[#d8ff62]">Easy</span>
+              Proventu<span className="text-[#d8ff62]"> AI</span>
             </span>
           </Link>
 
@@ -351,10 +351,10 @@ export default function Home() {
         <div className="mx-auto flex max-w-7xl flex-col gap-3 text-xs text-[#82928c] sm:flex-row sm:items-center sm:justify-between">
           <Link href="/" className="flex items-center gap-2 font-bold text-[#d5ddd9]">
             <BrandMark />
-            SalesEasy
+            Proventu AI
           </Link>
           <p>Revenue execution for growing teams.</p>
-          <p>&copy; 2026 SalesEasy</p>
+          <p>&copy; 2026 Proventu AI</p>
         </div>
       </footer>
     </main>

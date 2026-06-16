@@ -1,1 +1,1 @@
-"""SalesEasyAI supervised AI service."""
+"""Proventu AI supervised AI service."""

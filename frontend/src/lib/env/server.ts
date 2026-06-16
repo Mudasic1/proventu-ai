@@ -13,6 +13,9 @@ const serverEnvSchema = z
     GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
     AI_BACKEND_URL: z.string().url().optional(),
     AI_BACKEND_SHARED_SECRET: z.string().min(32).optional(),
+    STRIPE_SECRET_KEY: z.string().regex(/^(sk|rk)_(test|live)_/).optional(),
+    STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
+    INTERNAL_CRON_SECRET: z.string().min(32).optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -58,6 +61,15 @@ const serverEnvSchema = z
           "Configure both AI_BACKEND_URL and AI_BACKEND_SHARED_SECRET, or leave both unset.",
       });
     }
+
+    if (Boolean(env.STRIPE_SECRET_KEY) !== Boolean(env.STRIPE_WEBHOOK_SECRET)) {
+      context.addIssue({
+        code: "custom",
+        path: ["STRIPE_SECRET_KEY"],
+        message:
+          "Configure both STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET, or leave both unset.",
+      });
+    }
   });
 
 export const serverEnv = serverEnvSchema.parse({
@@ -72,5 +84,8 @@ export const serverEnv = serverEnvSchema.parse({
   AI_BACKEND_URL: process.env.AI_BACKEND_URL || undefined,
   AI_BACKEND_SHARED_SECRET:
     process.env.AI_BACKEND_SHARED_SECRET || undefined,
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || undefined,
+  STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || undefined,
+  INTERNAL_CRON_SECRET: process.env.INTERNAL_CRON_SECRET || undefined,
   NODE_ENV: process.env.NODE_ENV,
 });

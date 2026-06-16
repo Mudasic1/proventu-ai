@@ -1,4 +1,4 @@
-# SalesEasyAI Frontend
+# Proventu AI Frontend
 
 The frontend is a Next.js revenue workspace backed by Neon Postgres, Drizzle ORM, and Better Auth. The current implemented slice intentionally excludes AI agents, generated campaigns, publishing, scheduling, and automatic email sending.
 
@@ -17,15 +17,25 @@ The frontend is a Next.js revenue workspace backed by Neon Postgres, Drizzle ORM
 2. Add the pooled Neon connection string as `DATABASE_URI`.
 3. Add a direct Neon connection string as `DATABASE_DIRECT_URI` for migrations.
 4. Generate a Better Auth secret with at least 32 random characters.
-5. Install dependencies and apply migrations:
+5. Add Stripe test-mode billing secrets:
+   - `STRIPE_SECRET_KEY`: preferably a restricted key with Checkout, Customers, Products, Prices, Subscriptions, Billing Portal, Invoices, and Events access.
+   - `STRIPE_WEBHOOK_SECRET`: from `stripe listen --forward-to localhost:3000/api/stripe/webhook` for local testing, or your Dashboard webhook endpoint in production.
+6. Install dependencies, apply migrations, and sync the Stripe billing catalog:
 
 ```bash
 npm install
 npm run db:migrate
+npm run billing:sync-catalog
 npm run dev
 ```
 
 Open `http://localhost:3000`.
+
+For local webhook verification, keep Stripe CLI forwarding in a separate terminal:
+
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
 
 ## Commands
 
@@ -38,6 +48,7 @@ npm run build
 npm run db:generate
 npm run db:migrate
 npm run db:studio
+npm run billing:sync-catalog
 ```
 
 ## CSV Contact Import

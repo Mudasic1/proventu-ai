@@ -3,7 +3,7 @@ import "./globals.css";
 import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
-  title: "SalesEasy | Put Your Revenue Work in Motion",
+  title: "Proventu AI | Put Your Revenue Work in Motion",
   description:
     "Turn your offer and lead list into campaigns, clear priorities, and follow-ups your team can approve before the day gets busy.",
 };

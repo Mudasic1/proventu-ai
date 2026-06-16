@@ -13,6 +13,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
+    "billing:sync-catalog": "tsx src/scripts/sync-billing-catalog.ts",
     "auth:schema": "npx auth@latest generate --config ./src/lib/auth-cli.ts --output ./src/lib/db/schema.ts --yes"
   },
   "dependencies": {
@@ -34,6 +35,7 @@
     "react-hot-toast": "^2.6.0",
     "server-only": "^0.0.1",
     "shadcn": "^4.8.3",
+    "stripe": "^22.2.0",
     "tailwind-merge": "^3.6.0",
     "tw-animate-css": "^1.4.0",
     "zod": "^4.4.3"

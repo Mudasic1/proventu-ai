@@ -2,6 +2,7 @@ import "server-only";
 
 import { and, eq } from "drizzle-orm";
 
+import { parseLocalToUtc } from "@/lib/date-utils";
 import { db } from "@/lib/db";
 import {
   automation,
@@ -33,6 +34,7 @@ import type {
   workspaceSettingsSchema,
 } from "@/lib/validations/workspace-modules";
 import { recordActivity } from "@/server/mutations/activity";
+import { getWorkspaceSettings } from "@/server/queries/workspace-modules";
 import type { z } from "zod";
 
 type MutationContext = { workspaceId: string; userId: string };
@@ -140,6 +142,10 @@ export async function createCampaign(context: MutationContext, input: CampaignIn
 
 export async function createSocialPost(context: MutationContext, input: SocialPostInput) {
   await requireWorkspaceCampaign(context.workspaceId, input.campaignId);
+  const settings = await getWorkspaceSettings(context.workspaceId);
+  const tz = settings?.timezone || "UTC";
+  const scheduledDate = input.scheduledAt ? parseLocalToUtc(input.scheduledAt, tz) : null;
+
   const socialPostId = id();
   await db.insert(socialPost).values({
     id: socialPostId,
@@ -149,7 +155,7 @@ export async function createSocialPost(context: MutationContext, input: SocialPo
     platform: input.platform,
     content: input.content,
     status: input.status,
-    scheduledAt: optionalDate(input.scheduledAt),
+    scheduledAt: scheduledDate,
   });
   await logCreated(context, "social_post", socialPostId, `${input.platform} post saved`);
   return socialPostId;
@@ -160,6 +166,10 @@ export async function createEmailCampaign(
   input: EmailCampaignInput,
 ) {
   await requireWorkspaceCampaign(context.workspaceId, input.campaignId);
+  const settings = await getWorkspaceSettings(context.workspaceId);
+  const tz = settings?.timezone || "UTC";
+  const scheduledDate = input.scheduledAt ? parseLocalToUtc(input.scheduledAt, tz) : null;
+
   const emailCampaignId = id();
   await db.insert(emailCampaign).values({
     id: emailCampaignId,
@@ -171,7 +181,7 @@ export async function createEmailCampaign(
     previewText: input.previewText,
     body: input.body,
     status: input.status,
-    scheduledAt: optionalDate(input.scheduledAt),
+    scheduledAt: scheduledDate,
   });
   await logCreated(context, "email_campaign", emailCampaignId, `${input.name} email draft saved`);
   return emailCampaignId;

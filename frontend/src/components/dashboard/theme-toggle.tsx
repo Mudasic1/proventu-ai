@@ -16,7 +16,7 @@ function applyTheme(theme: Theme) {
 export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === "undefined") return "dark";
-    const stored = window.localStorage.getItem("saleseasy-theme");
+    const stored = window.localStorage.getItem("proventu-ai-theme");
     return stored === "light" || stored === "dark" ? stored : "dark";
   });
 
@@ -27,7 +27,7 @@ export function ThemeToggle() {
   function toggleTheme() {
     const nextTheme = theme === "dark" ? "light" : "dark";
     setTheme(nextTheme);
-    window.localStorage.setItem("saleseasy-theme", nextTheme);
+    window.localStorage.setItem("proventu-ai-theme", nextTheme);
     applyTheme(nextTheme);
   }
 

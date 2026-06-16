@@ -12,7 +12,7 @@ export default async function SuperAdminDashboardPage() {
       <section>
         <p className="text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#527065]">Platform overview</p>
         <h1 className="mt-3 max-w-4xl font-display text-6xl font-bold leading-[0.88] tracking-[-0.1em] text-[#10211c]">Application operations,<br /><span className="text-[#547330]">in one view.</span></h1>
-        <p className="mt-4 max-w-2xl text-sm leading-6 text-[#60706a]">Private application-wide analytics for the SalesEasy platform. Workspace users cannot access this console.</p>
+        <p className="mt-4 max-w-2xl text-sm leading-6 text-[#60706a]">Private application-wide analytics for the Proventu AI platform. Workspace users cannot access this console.</p>
       </section>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import {
   Activity,
   Building2,
+  CalendarClock,
   CalendarDays,
   ChartNoAxesCombined,
   ClipboardCheck,
@@ -13,6 +14,7 @@ import {
   ListOrdered,
   Mail,
   Megaphone,
+  History,
   Send,
   Settings2,
   UsersRound,
@@ -38,6 +40,8 @@ const navGroups = [
     label: "Sales",
     items: [
       { href: "/crm/contacts", label: "Contacts", icon: ContactRound, permission: "contacts:read" },
+      { href: "/crm/activity", label: "Activity", icon: History, permission: "contacts:read" },
+      { href: "/sales/appointments", label: "Appointments", icon: CalendarClock, permission: "contacts:read" },
       { href: "/crm/companies", label: "Companies", icon: Building2, permission: "companies:read" },
       { href: "/sales/pipeline", label: "Pipeline", icon: ChartNoAxesCombined, permission: "pipeline:read" },
       { href: "/sales/tasks", label: "Tasks", icon: ClipboardCheck, permission: "tasks:read" },

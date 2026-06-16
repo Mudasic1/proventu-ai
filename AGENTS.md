@@ -1,4 +1,4 @@
-# saleseasyai Development Guidelines
+# Proventu AI Development Guidelines
 
 Auto-generated from feature planning. Last updated: 2026-05-31
 

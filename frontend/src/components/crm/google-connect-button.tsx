@@ -5,18 +5,43 @@ import { CalendarDays, LoaderCircle, MailPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
-import { GOOGLE_CRM_SCOPES } from "@/lib/google/scopes";
+import { GOOGLE_CALENDAR_SCOPE, GOOGLE_CRM_SCOPES } from "@/lib/google/scopes";
 
-export function GoogleConnectButton() {
+type GoogleConnectButtonProps = {
+  capability?: "calendar" | "crm";
+  callbackURL?: string;
+};
+
+const configuredAuthOrigin = process.env.NEXT_PUBLIC_BETTER_AUTH_URL;
+
+export function GoogleConnectButton({
+  capability = "crm",
+  callbackURL,
+}: GoogleConnectButtonProps) {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isCalendarOnly = capability === "calendar";
 
   async function connect() {
     setError(null);
+    if (
+      configuredAuthOrigin &&
+      window.location.origin !== configuredAuthOrigin
+    ) {
+      window.location.href = `${configuredAuthOrigin}${window.location.pathname}${window.location.search}`;
+      return;
+    }
+
     setIsPending(true);
+    const resolvedCallbackURL = callbackURL?.startsWith("http")
+      ? callbackURL
+      : `${window.location.origin}${callbackURL ?? window.location.pathname}`;
     const result = await authClient.linkSocial({
       provider: "google",
-      scopes: [...GOOGLE_CRM_SCOPES],
+      scopes: isCalendarOnly ? [GOOGLE_CALENDAR_SCOPE] : [...GOOGLE_CRM_SCOPES],
+      callbackURL: resolvedCallbackURL,
+      errorCallbackURL: resolvedCallbackURL,
+      requestSignUp: false,
     });
 
     if (result.error) {
@@ -33,13 +58,14 @@ export function GoogleConnectButton() {
             Google workspace
           </p>
           <p className="mt-2 text-sm leading-6 text-[#aebbb6]">
-            Connect Google to schedule meetings in Calendar and send approved
-            CRM emails through Gmail.
+            {isCalendarOnly
+              ? "Connect Google Calendar to schedule meetings and email attendee invites from Calendar."
+              : "Connect Google to schedule meetings in Calendar and send approved CRM emails through Gmail."}
           </p>
         </div>
         <div className="flex gap-1.5 text-[#d8ff62]">
           <CalendarDays className="size-4" />
-          <MailPlus className="size-4" />
+          {isCalendarOnly ? null : <MailPlus className="size-4" />}
         </div>
       </div>
 
@@ -56,7 +82,7 @@ export function GoogleConnectButton() {
         className="rounded-full bg-[#d8ff62] font-bold text-[#10211c] hover:bg-[#e5ff92]"
       >
         {isPending ? <LoaderCircle className="size-4 animate-spin" /> : null}
-        Connect Google Calendar and Gmail
+        {isCalendarOnly ? "Connect Google Calendar" : "Connect Google Calendar and Gmail"}
       </Button>
     </div>
   );

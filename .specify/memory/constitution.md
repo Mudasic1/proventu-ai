@@ -25,7 +25,7 @@ Sync Impact Report
   - ✅ .specify/templates/commands/ does not exist; no command files required updates.
 - Deferred items: None.
 -->
-# SalesEasyAI Constitution
+# Proventu AI Constitution
 
 ## Core Principles
 
@@ -36,7 +36,7 @@ workspace membership and required permissions before reading or changing data. C
 workspace identifiers MUST NOT be trusted without server-side authorization. Missing workspace
 scope is a release-blocking security defect.
 
-**Rationale**: SalesEasyAI stores sensitive lead, customer, campaign, and revenue information.
+**Rationale**: Proventu AI stores sensitive lead, customer, campaign, and revenue information.
 Cross-workspace access would violate the product's core trust boundary.
 
 ### II. Human Control Governs AI Actions

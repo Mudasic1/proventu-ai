@@ -811,7 +811,11 @@ export const billingPlan = pgTable(
     interval: text("interval").default("month").notNull(),
     description: text("description").default("").notNull(),
     features: text("features").array().default([]).notNull(),
+    stripePriceId: text("stripe_price_id"),
+    monthlyIncludedCredits: integer("monthly_included_credits").default(0).notNull(),
     isActive: boolean("is_active").default(true).notNull(),
+    effectiveFrom: timestamp("effective_from").defaultNow().notNull(),
+    effectiveTo: timestamp("effective_to"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -831,7 +835,13 @@ export const workspaceSubscription = pgTable(
     billingPlanId: text("billing_plan_id")
       .notNull()
       .references(() => billingPlan.id, { onDelete: "restrict" }),
+    stripeSubscriptionId: text("stripe_subscription_id"),
+    stripeCustomerId: text("stripe_customer_id"),
     status: text("status").default("active").notNull(),
+    currentPeriodStart: timestamp("current_period_start"),
+    currentPeriodEnd: timestamp("current_period_end"),
+    cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false).notNull(),
+    endedAt: timestamp("ended_at"),
     renewsAt: timestamp("renews_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -841,6 +851,269 @@ export const workspaceSubscription = pgTable(
   },
   (table) => [
     uniqueIndex("workspace_subscription_workspace_idx").on(table.workspaceId),
+    uniqueIndex("workspace_subscription_stripe_subscription_idx").on(
+      table.stripeSubscriptionId,
+    ),
+  ],
+);
+
+export const topUpPackage = pgTable(
+  "top_up_package",
+  {
+    id: text("id").primaryKey(),
+    code: text("code").notNull(),
+    name: text("name").notNull(),
+    description: text("description").default("").notNull(),
+    priceCents: integer("price_cents").default(0).notNull(),
+    stripePriceId: text("stripe_price_id").notNull(),
+    grantedCredits: integer("granted_credits").notNull(),
+    isActive: boolean("is_active").default(true).notNull(),
+    effectiveFrom: timestamp("effective_from").defaultNow().notNull(),
+    effectiveTo: timestamp("effective_to"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("top_up_package_code_idx").on(table.code),
+    uniqueIndex("top_up_package_stripe_price_idx").on(table.stripePriceId),
+  ],
+);
+
+export const workspaceBillingAccount = pgTable(
+  "workspace_billing_account",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    stripeCustomerId: text("stripe_customer_id").notNull(),
+    billingEmail: text("billing_email").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("workspace_billing_account_workspace_idx").on(table.workspaceId),
+    uniqueIndex("workspace_billing_account_customer_idx").on(
+      table.stripeCustomerId,
+    ),
+  ],
+);
+
+export const billingPurchase = pgTable(
+  "billing_purchase",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    billingPlanId: text("billing_plan_id").references(() => billingPlan.id, {
+      onDelete: "restrict",
+    }),
+    topUpPackageId: text("top_up_package_id").references(() => topUpPackage.id, {
+      onDelete: "restrict",
+    }),
+    requestedByUserId: text("requested_by_user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    idempotencyKey: text("idempotency_key").notNull(),
+    stripeCheckoutSessionId: text("stripe_checkout_session_id"),
+    stripePaymentIntentId: text("stripe_payment_intent_id"),
+    stripeSubscriptionId: text("stripe_subscription_id"),
+    status: text("status").default("pending").notNull(),
+    fulfilledAt: timestamp("fulfilled_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("billing_purchase_workspace_key_idx").on(
+      table.workspaceId,
+      table.idempotencyKey,
+    ),
+    uniqueIndex("billing_purchase_checkout_session_idx").on(
+      table.stripeCheckoutSessionId,
+    ),
+    index("billing_purchase_workspace_idx").on(table.workspaceId, table.createdAt),
+  ],
+);
+
+export const paymentRecord = pgTable(
+  "payment_record",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    billingPurchaseId: text("billing_purchase_id").references(
+      () => billingPurchase.id,
+      { onDelete: "set null" },
+    ),
+    workspaceSubscriptionId: text("workspace_subscription_id").references(
+      () => workspaceSubscription.id,
+      { onDelete: "set null" },
+    ),
+    kind: text("kind").notNull(),
+    stripeObjectId: text("stripe_object_id").notNull(),
+    status: text("status").notNull(),
+    amountMinor: integer("amount_minor").default(0).notNull(),
+    currency: text("currency").default("usd").notNull(),
+    safeSummary: text("safe_summary").default("").notNull(),
+    occurredAt: timestamp("occurred_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("payment_record_stripe_object_idx").on(table.stripeObjectId),
+    index("payment_record_workspace_idx").on(table.workspaceId, table.occurredAt),
+  ],
+);
+
+export const stripeWebhookEvent = pgTable(
+  "stripe_webhook_event",
+  {
+    id: text("id").primaryKey(),
+    stripeEventId: text("stripe_event_id").notNull(),
+    eventType: text("event_type").notNull(),
+    stripeObjectId: text("stripe_object_id").notNull(),
+    workspaceId: text("workspace_id").references(() => workspace.id, {
+      onDelete: "set null",
+    }),
+    status: text("status").default("pending").notNull(),
+    attemptCount: integer("attempt_count").default(0).notNull(),
+    nextAttemptAt: timestamp("next_attempt_at").defaultNow().notNull(),
+    receivedAt: timestamp("received_at").defaultNow().notNull(),
+    processedAt: timestamp("processed_at"),
+    safeErrorCode: text("safe_error_code"),
+    safeErrorMessage: text("safe_error_message"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("stripe_webhook_event_stripe_event_idx").on(table.stripeEventId),
+    index("stripe_webhook_event_status_idx").on(table.status, table.nextAttemptAt),
+  ],
+);
+
+export const creditWallet = pgTable(
+  "credit_wallet",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    spendableCredits: integer("spendable_credits").default(0).notNull(),
+    reservedCredits: integer("reserved_credits").default(0).notNull(),
+    unresolvedCredits: integer("unresolved_credits").default(0).notNull(),
+    spendingBlocked: boolean("spending_blocked").default(false).notNull(),
+    version: integer("version").default(0).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [uniqueIndex("credit_wallet_workspace_idx").on(table.workspaceId)],
+);
+
+export const creditGrant = pgTable(
+  "credit_grant",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    walletId: text("wallet_id")
+      .notNull()
+      .references(() => creditWallet.id, { onDelete: "cascade" }),
+    sourceKind: text("source_kind").notNull(),
+    sourceId: text("source_id").notNull(),
+    operationKey: text("operation_key").notNull(),
+    grantedCredits: integer("granted_credits").notNull(),
+    availableCredits: integer("available_credits").notNull(),
+    reservedCredits: integer("reserved_credits").default(0).notNull(),
+    consumedCredits: integer("consumed_credits").default(0).notNull(),
+    reversedCredits: integer("reversed_credits").default(0).notNull(),
+    expiredCredits: integer("expired_credits").default(0).notNull(),
+    expiresAt: timestamp("expires_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex("credit_grant_operation_key_idx").on(table.operationKey),
+    index("credit_grant_workspace_expiry_idx").on(table.workspaceId, table.expiresAt),
+  ],
+);
+
+export const creditLedgerEntry = pgTable(
+  "credit_ledger_entry",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    walletId: text("wallet_id")
+      .notNull()
+      .references(() => creditWallet.id, { onDelete: "cascade" }),
+    entryType: text("entry_type").notNull(),
+    operationKey: text("operation_key").notNull(),
+    spendableDelta: integer("spendable_delta").default(0).notNull(),
+    reservedDelta: integer("reserved_delta").default(0).notNull(),
+    unresolvedDelta: integer("unresolved_delta").default(0).notNull(),
+    spendableAfter: integer("spendable_after").notNull(),
+    reservedAfter: integer("reserved_after").notNull(),
+    unresolvedAfter: integer("unresolved_after").notNull(),
+    sourceType: text("source_type").notNull(),
+    sourceId: text("source_id").notNull(),
+    actorUserId: text("actor_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    reason: text("reason").default("").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("credit_ledger_entry_operation_key_idx").on(table.operationKey),
+    index("credit_ledger_entry_workspace_idx").on(table.workspaceId, table.createdAt),
+  ],
+);
+
+export const operationsAuditEntry = pgTable(
+  "operations_audit_entry",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id").references(() => workspace.id, {
+      onDelete: "set null",
+    }),
+    actorUserId: text("actor_user_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    actorKind: text("actor_kind").notNull(),
+    action: text("action").notNull(),
+    entityType: text("entity_type").notNull(),
+    entityId: text("entity_id").notNull(),
+    safeSummary: text("safe_summary").default("").notNull(),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}).notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    index("operations_audit_workspace_idx").on(table.workspaceId, table.createdAt),
   ],
 );
 

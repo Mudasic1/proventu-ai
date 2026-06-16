@@ -35,6 +35,14 @@ export async function getGoogleAccessForUser(
     body: { providerId: "google", userId },
     headers: await headers(),
   });
+
+  if (!token) {
+    throw new AppError(
+      "FORBIDDEN",
+      "Reconnect Google and approve Calendar and Gmail CRM permissions.",
+    );
+  }
+
   const scopes = token.scopes ?? [];
   const missingScopes = requiredScopes.filter((scope) => !scopes.includes(scope));
 

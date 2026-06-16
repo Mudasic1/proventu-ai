@@ -17,6 +17,10 @@ export type GoogleIntegrationStatus = {
   hasGmailScope: boolean;
 };
 
+export function parseGoogleOAuthScopes(scope: string | null | undefined) {
+  return new Set((scope ?? "").split(/[\s,]+/).filter(Boolean));
+}
+
 export async function getGoogleIntegrationStatus(
   userId: string,
 ): Promise<GoogleIntegrationStatus> {
@@ -36,7 +40,7 @@ export async function getGoogleIntegrationStatus(
     .where(and(eq(account.userId, userId), eq(account.providerId, "google")))
     .limit(1);
 
-  const scopes = new Set((record?.scope ?? "").split(/\s+/).filter(Boolean));
+  const scopes = parseGoogleOAuthScopes(record?.scope);
 
   return {
     configured,

@@ -1,9 +1,0 @@
-node_modules
-.next
-coverage
-dist
-build
-*.log
-.env
-.env.*
-!.env.example

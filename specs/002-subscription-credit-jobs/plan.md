@@ -5,7 +5,7 @@
 
 ## Summary
 
-Build the paid-usage foundation for SalesEasyAI as a set of bounded vertical slices:
+Build the paid-usage foundation for Proventu AI as a set of bounded vertical slices:
 
 1. Workspace billing catalog and Stripe-hosted checkout
 2. Verified, idempotent Stripe webhook inbox and reconciliation

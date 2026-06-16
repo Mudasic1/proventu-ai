@@ -128,7 +128,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       </Button>
 
       <p className="text-center text-sm text-[#8f9f99]">
-        {isSignUp ? "Already have access?" : "New to SalesEasy?"}{" "}
+        {isSignUp ? "Already have access?" : "New to Proventu AI?"}{" "}
         <Link
           href={isSignUp ? "/signin" : "/signup"}
           className="font-bold text-[#d8ff62] transition hover:text-[#e5ff92]"

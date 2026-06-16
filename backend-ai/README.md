@@ -1,6 +1,6 @@
-# SalesEasyAI AI Backend
+# Proventu AI Backend
 
-Supervised AI orchestration for SalesEasyAI. The service owns `ai_*` runtime
+Supervised AI orchestration for Proventu AI. The service owns `ai_*` runtime
 records, structured generation, and deterministic guardrails. Product records
 and human review state remain owned by `frontend/`.
 

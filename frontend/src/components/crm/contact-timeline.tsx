@@ -1,12 +1,16 @@
+"use client";
+
+import { useActionState, useEffect, useRef } from "react";
+import toast from "react-hot-toast";
 import {
   CalendarDays,
   CheckCircle2,
   Clock3,
+  LoaderCircle,
   Mail,
   MessageSquareText,
   Phone,
   StickyNote,
-  Trash2,
   UsersRound,
 } from "lucide-react";
 
@@ -16,9 +20,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import type { ActionState } from "@/lib/errors/app-error";
 import type { GoogleIntegrationStatus } from "@/server/queries/google-integrations";
-import { createCrmActivityFormAction } from "@/server/actions/crm-activities";
-import { removeContactAction } from "@/server/actions/contacts";
+import { createCrmActivityAction } from "@/server/actions/crm-activities";
 
 type Activity = {
   id: string;
@@ -80,14 +84,28 @@ export function ContactTimeline({
   googleStatus: GoogleIntegrationStatus;
   canWrite?: boolean;
 }) {
-  const addActivity = createCrmActivityFormAction.bind(null, contactId);
-  const remove = removeContactAction.bind(null, contactId);
+  const formRef = useRef<HTMLFormElement>(null);
+  const [state, formAction, isPending] = useActionState(
+    (prevState: ActionState, formData: FormData) =>
+      createCrmActivityAction(contactId, prevState, formData),
+    { status: "idle" }
+  );
+
+  useEffect(() => {
+    if (state.status === "success") {
+      if (state.message) toast.success(state.message);
+      formRef.current?.reset();
+    } else if (state.status === "error" && state.message) {
+      toast.error(state.message);
+    }
+  }, [state]);
 
   return (
     <div className="grid gap-5">
       {canWrite ? (
         <form
-          action={addActivity}
+          ref={formRef}
+          action={formAction}
           className="grid gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4"
         >
           <div className="flex items-center justify-between gap-3">
@@ -229,7 +247,12 @@ export function ContactTimeline({
             </label>
           </div>
 
-          <Button className="rounded-full bg-[#d8ff62] px-4 font-bold text-[#10211c] hover:bg-[#e5ff92]">
+          <Button
+            type="submit"
+            disabled={isPending}
+            className="rounded-full bg-[#d8ff62] px-4 font-bold text-[#10211c] hover:bg-[#e5ff92]"
+          >
+            {isPending ? <LoaderCircle className="size-4 animate-spin mr-2" /> : null}
             Save activity
           </Button>
         </form>
@@ -256,18 +279,6 @@ export function ContactTimeline({
           <ActivityCard key={entry.id} entry={entry} />
         ))}
       </div>
-      {canWrite ? (
-        <form action={remove} className="rounded-xl border border-red-300/15 bg-red-300/5 p-3">
-          <label className="flex items-center gap-2 text-xs text-red-100">
-            <input type="checkbox" name="confirmation" value="remove" required />
-            Confirm removal. The audit entry remains available.
-          </label>
-          <Button variant="destructive" className="mt-3 rounded-full">
-            <Trash2 />
-            Remove contact
-          </Button>
-        </form>
-      ) : null}
     </div>
   );
 }

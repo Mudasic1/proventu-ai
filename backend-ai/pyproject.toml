@@ -1,7 +1,7 @@
 [project]
 name = "backend-ai"
 version = "0.1.0"
-description = "SalesEasyAI supervised AI orchestration service"
+description = "Proventu AI supervised AI orchestration service"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
