@@ -31,7 +31,7 @@ export default async function EmailSequencesPage() {
       />
       {canWrite ? (
         <Panel>
-          <h2 className="font-display text-2xl font-bold tracking-[-0.07em]">Create sequence</h2>
+          <h2 className="font-display text-2xl font-bold tracking-wide">Create sequence</h2>
           <form action={createEmailSequenceAction} className="mt-4 grid gap-3 md:grid-cols-2">
             <input required name="name" placeholder="Sequence name" className={fieldClassName} />
             <select name="campaignId" className={fieldClassName}>
@@ -70,9 +70,9 @@ export default async function EmailSequencesPage() {
                     options={["draft", "active", "paused", "archived"]}
                   />
                 ) : <StatusBadge value={record.status} />}
-                <ListOrdered className="size-4 text-[#71817b]" />
+                <ListOrdered className="size-4 text-[var(--dashboard-icon)]" />
               </div>
-              <p className="mt-3 text-sm leading-6 text-[#aebbb6]">
+              <p className="mt-3 text-sm leading-6 text-[var(--dashboard-muted)]">
                 {record.description || "No cadence notes yet."}
               </p>
             </RecordCard>

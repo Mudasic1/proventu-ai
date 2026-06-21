@@ -19,7 +19,7 @@ export function SignOutButton() {
     <Button
       type="button"
       variant="outline"
-      className="rounded-full border-white/[0.1] bg-white/[0.035] px-4 font-bold text-[#d5ddd9] hover:border-white/20 hover:bg-white/[0.08] hover:text-white"
+      className="rounded-full border-white/10 bg-white/[0.045] px-4 font-bold text-[var(--dashboard-sidebar-muted)] hover:border-white/20 hover:bg-white/[0.08] hover:text-[var(--dashboard-sidebar-fg)]"
       onClick={signOut}
     >
       <LogOut className="size-4" />

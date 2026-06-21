@@ -21,11 +21,11 @@ export default async function TasksPage() {
   return (
     <div className="grid gap-5">
       <section>
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#d8ff62]">Follow-up tasks</p>
-        <h1 className="mt-2 font-display text-5xl font-bold tracking-[-0.09em]">Keep the next step visible.</h1>
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[var(--dashboard-accent)]">Follow-up tasks</p>
+        <h1 className="mt-2 font-display text-5xl font-bold tracking-wide">Keep the next step visible.</h1>
       </section>
-      {canWrite ? <details className="rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-4">
-        <summary className="cursor-pointer text-sm font-bold text-[#d8ff62]">Add a follow-up</summary>
+      {canWrite ? <details className="rounded-[22px] border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-4">
+        <summary className="cursor-pointer text-sm font-bold text-[var(--dashboard-accent)]">Add a follow-up</summary>
         <div className="mt-4"><TaskForm contacts={contacts} deals={deals} /></div>
       </details> : null}
       <TaskList tasks={tasks} canWrite={canWrite} />

@@ -51,19 +51,19 @@ export function GoogleConnectButton({
   }
 
   return (
-    <div className="grid gap-3 rounded-2xl border border-[#d8ff62]/15 bg-[#d8ff62]/5 p-4">
+    <div className="grid gap-3 rounded-2xl border border-[var(--dashboard-accent-border)] bg-[var(--dashboard-accent-soft)] p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#d8ff62]">
+          <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--dashboard-accent)]">
             Google workspace
           </p>
-          <p className="mt-2 text-sm leading-6 text-[#aebbb6]">
+          <p className="mt-2 text-sm leading-6 text-[var(--dashboard-muted)]">
             {isCalendarOnly
               ? "Connect Google Calendar to schedule meetings and email attendee invites from Calendar."
               : "Connect Google to schedule meetings in Calendar and send approved CRM emails through Gmail."}
           </p>
         </div>
-        <div className="flex gap-1.5 text-[#d8ff62]">
+        <div className="flex gap-1.5 text-[var(--dashboard-accent)]">
           <CalendarDays className="size-4" />
           {isCalendarOnly ? null : <MailPlus className="size-4" />}
         </div>
@@ -79,7 +79,7 @@ export function GoogleConnectButton({
         type="button"
         onClick={connect}
         disabled={isPending}
-        className="rounded-full bg-[#d8ff62] font-bold text-[#10211c] hover:bg-[#e5ff92]"
+        className="rounded-full bg-[var(--dashboard-accent)] font-bold text-[var(--dashboard-accent-foreground)] hover:bg-[var(--dashboard-accent-hover)]"
       >
         {isPending ? <LoaderCircle className="size-4 animate-spin" /> : null}
         {isCalendarOnly ? "Connect Google Calendar" : "Connect Google Calendar and Gmail"}

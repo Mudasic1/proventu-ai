@@ -3,7 +3,7 @@ import json
 from typing import Protocol
 from urllib import error, parse, request as urlrequest
 
-from app.guardrails import scan_campaign_plan
+from app.agents.guardrails import scan_campaign_plan
 from app.repositories import AiRunRepository
 from app.schemas import CampaignPlanDraft, CampaignPlanRequest, CampaignPlanResponse
 

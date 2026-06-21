@@ -3,7 +3,7 @@ from uuid import UUID, uuid4
 from fastapi.testclient import TestClient
 
 from app.api import app
-from app.api.dependencies import get_campaign_plan_service, require_internal_secret
+from app.api.deps import get_campaign_plan_service, require_internal_secret
 from app.schemas import (
     CampaignPlanDraft,
     CampaignPlanResponse,

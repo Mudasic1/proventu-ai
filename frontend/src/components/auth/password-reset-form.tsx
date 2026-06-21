@@ -56,7 +56,7 @@ export function PasswordResetForm({ token }: PasswordResetFormProps) {
   return (
     <form className="grid gap-4" onSubmit={handleSubmit}>
       <div className="grid gap-2">
-        <Label htmlFor="password">New password</Label>
+        <Label htmlFor="password" className="tracking-wide">New password</Label>
         <Input
           id="password"
           name="password"
@@ -69,7 +69,7 @@ export function PasswordResetForm({ token }: PasswordResetFormProps) {
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="confirmation">Confirm password</Label>
+        <Label htmlFor="confirmation" className="tracking-wide">Confirm password</Label>
         <Input
           id="confirmation"
           name="confirmation"
@@ -84,7 +84,7 @@ export function PasswordResetForm({ token }: PasswordResetFormProps) {
       {error ? (
         <p
           role="alert"
-          className="rounded-xl border border-red-300/20 bg-red-300/8 px-3 py-2.5 text-sm text-red-100"
+          className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700"
         >
           {error}
         </p>
@@ -93,7 +93,7 @@ export function PasswordResetForm({ token }: PasswordResetFormProps) {
       <Button
         type="submit"
         size="lg"
-        className="h-11 rounded-full bg-[#d8ff62] px-5 font-bold text-[#10211c] hover:bg-[#e5ff92]"
+        className="h-11 rounded-full bg-gradient-to-r from-red-500 to-rose-500 px-5 font-bold text-white shadow-[0_10px_34px_rgba(255,92,92,0.25)] hover:from-red-400 hover:to-rose-400"
         disabled={isPending}
       >
         {isPending ? (
@@ -106,7 +106,7 @@ export function PasswordResetForm({ token }: PasswordResetFormProps) {
 
       <Link
         href="/forgot-password"
-        className="flex items-center justify-center gap-2 text-sm font-bold text-[#b8c5c0] transition hover:text-[#d8ff62]"
+        className="flex items-center justify-center gap-2 text-sm font-bold tracking-wide text-gray-500 transition hover:text-red-500"
       >
         <ArrowLeft className="size-4" />
         Request a new link

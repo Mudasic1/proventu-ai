@@ -41,7 +41,7 @@ const activityIcons = {
 } as const;
 
 const inputClassName =
-  "border-white/[0.08] bg-[#07110f]/82 text-[#f4f2ea] placeholder:text-[#5f716a]";
+  "border-[var(--dashboard-border)] bg-[var(--dashboard-input)] text-[var(--dashboard-fg)] placeholder:text-[var(--dashboard-subtle)]";
 
 function activityType(entry: Activity) {
   const metadataType = entry.metadata?.type;
@@ -106,14 +106,14 @@ export function ContactTimeline({
         <form
           ref={formRef}
           action={formAction}
-          className="grid gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4"
+          className="grid gap-4 rounded-2xl border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-4"
         >
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#d8ff62]">
+              <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--dashboard-accent)]">
                 Log activity
               </p>
-              <p className="mt-1 text-xs leading-5 text-[#71817b]">
+              <p className="mt-1 text-xs leading-5 text-[var(--dashboard-icon)]">
                 Capture calls, meetings, emails, notes, and SMS touchpoints.
               </p>
             </div>
@@ -212,8 +212,8 @@ export function ContactTimeline({
             </div>
           </div>
 
-          <div className="grid gap-2 rounded-xl border border-white/[0.08] bg-[#07110f]/52 p-3">
-            <label className="flex items-start gap-2 text-xs leading-5 text-[#aebbb6]">
+          <div className="grid gap-2 rounded-xl border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-3">
+            <label className="flex items-start gap-2 text-xs leading-5 text-[var(--dashboard-muted)]">
               <input
                 type="checkbox"
                 name="syncToGoogleCalendar"
@@ -223,13 +223,13 @@ export function ContactTimeline({
               <span>
                 Create a Google Calendar event for meeting activities.
                 {!integrationStatus.hasCalendarScope ? (
-                  <span className="block text-[#71817b]">
+                  <span className="block text-[var(--dashboard-icon)]">
                     Connect Google with Calendar permission first.
                   </span>
                 ) : null}
               </span>
             </label>
-            <label className="flex items-start gap-2 text-xs leading-5 text-[#aebbb6]">
+            <label className="flex items-start gap-2 text-xs leading-5 text-[var(--dashboard-muted)]">
               <input
                 type="checkbox"
                 name="sendWithGmail"
@@ -239,7 +239,7 @@ export function ContactTimeline({
               <span>
                 Send this email activity through Gmail now.
                 {!integrationStatus.hasGmailScope ? (
-                  <span className="block text-[#71817b]">
+                  <span className="block text-[var(--dashboard-icon)]">
                     Connect Google with Gmail permission first.
                   </span>
                 ) : null}
@@ -250,7 +250,7 @@ export function ContactTimeline({
           <Button
             type="submit"
             disabled={isPending}
-            className="rounded-full bg-[#d8ff62] px-4 font-bold text-[#10211c] hover:bg-[#e5ff92]"
+            className="rounded-full bg-[var(--dashboard-accent)] px-4 font-bold text-[var(--dashboard-accent-foreground)] hover:bg-[var(--dashboard-accent-hover)]"
           >
             {isPending ? <LoaderCircle className="size-4 animate-spin mr-2" /> : null}
             Save activity
@@ -262,11 +262,11 @@ export function ContactTimeline({
         integrationStatus.configured ? (
           <GoogleConnectButton />
         ) : (
-          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4">
-            <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#d8ff62]">
+          <div className="rounded-2xl border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-4">
+            <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--dashboard-accent)]">
               Google not configured
             </p>
-            <p className="mt-2 text-sm leading-6 text-[#aebbb6]">
+            <p className="mt-2 text-sm leading-6 text-[var(--dashboard-muted)]">
               Add `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, then configure
               the Google OAuth callback at `/api/auth/callback/google`.
             </p>
@@ -289,15 +289,15 @@ function ActivityCard({ entry }: { entry: Activity }) {
   const statuses = googleStatus(entry);
 
   return (
-    <article className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-3">
+    <article className="rounded-xl border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-3">
       <div className="flex items-start gap-3">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#d8ff62]/10 text-[#d8ff62]">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[var(--dashboard-accent-soft)] text-[var(--dashboard-accent)]">
           <Icon className="size-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-[#d7e0dd]">{entry.summary}</p>
+          <p className="text-sm font-semibold text-[var(--dashboard-fg)]">{entry.summary}</p>
           {typeof entry.metadata?.scheduledAt === "string" && entry.metadata.scheduledAt ? (
-            <p className="mt-1 flex items-center gap-1.5 text-xs text-[#9eaea8]">
+            <p className="mt-1 flex items-center gap-1.5 text-xs text-[var(--dashboard-muted)]">
               <CalendarDays className="size-3.5" />
               {new Date(entry.metadata.scheduledAt).toLocaleString()}
             </p>
@@ -307,7 +307,7 @@ function ActivityCard({ entry }: { entry: Activity }) {
               {statuses.map((status) => (
                 <span
                   key={status}
-                  className="inline-flex items-center gap-1 rounded-full border border-[#d8ff62]/15 bg-[#d8ff62]/8 px-2 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[#d8ff62]"
+                  className="inline-flex items-center gap-1 rounded-full border border-[var(--dashboard-accent-border)] bg-[var(--dashboard-accent-soft)] px-2 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-[var(--dashboard-accent)]"
                 >
                   <CheckCircle2 className="size-3" />
                   {status}
@@ -315,7 +315,7 @@ function ActivityCard({ entry }: { entry: Activity }) {
               ))}
             </div>
           ) : null}
-          <p className="mt-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[#71817b]">
+          <p className="mt-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--dashboard-icon)]">
             <Clock3 className="size-3" />
             {entry.action.replace(".", " - ").replaceAll("_", " ")} -{" "}
             {entry.createdAt.toLocaleString()}

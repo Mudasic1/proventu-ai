@@ -23,25 +23,25 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
       title={
         <>
           Pick up the
-          <span className="block text-[#d8ff62]">revenue thread.</span>
+          <span className="block text-red-500">revenue thread.</span>
         </>
       }
       description="Log in to review your priorities, drafts, and the next customer moves worth making."
     >
       {params.created === "1" ? (
-        <p className="mb-4 rounded-xl border border-[#d8ff62]/18 bg-[#d8ff62]/7 px-3 py-2.5 text-sm leading-5 text-[#dbe6e2]">
+        <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm leading-5 text-gray-700">
           Account created. Log in to open your workspace.
         </p>
       ) : null}
       {params.reset === "1" ? (
-        <p className="mb-4 rounded-xl border border-[#d8ff62]/18 bg-[#d8ff62]/7 px-3 py-2.5 text-sm leading-5 text-[#dbe6e2]">
+        <p className="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm leading-5 text-gray-700">
           Password updated. Log in with your new password.
         </p>
       ) : null}
       <AuthForm mode="sign-in" />
-      <p className="mt-5 text-center text-xs leading-5 text-[#74857f]">
+      <p className="mt-5 text-center text-xs leading-5 text-gray-400">
         By continuing, you agree to keep your account secure.{" "}
-        <Link href="/" className="font-bold text-[#aebbb6] hover:text-[#d8ff62]">
+        <Link href="/" className="font-bold text-gray-500 hover:text-red-500">
           Return home
         </Link>
       </p>

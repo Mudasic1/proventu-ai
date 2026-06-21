@@ -18,15 +18,15 @@ export default async function SignUpPage() {
       title={
         <>
           Start with a
-          <span className="block text-[#d8ff62]">clearer sales day.</span>
+          <span className="block text-red-500">clearer sales day.</span>
         </>
       }
       description="Create your secure account. Your first workspace is where leads, campaigns, and approvals will come together."
     >
       <AuthForm mode="sign-up" />
-      <p className="mt-5 text-center text-xs leading-5 text-[#74857f]">
+      <p className="mt-5 text-center text-xs leading-5 text-gray-400">
         By creating an account, you agree to the secure use of your workspace.{" "}
-        <Link href="/" className="font-bold text-[#aebbb6] hover:text-[#d8ff62]">
+        <Link href="/" className="font-bold text-gray-500 hover:text-red-500">
           Return home
         </Link>
       </p>

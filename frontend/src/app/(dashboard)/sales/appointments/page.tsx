@@ -26,14 +26,14 @@ export default async function AppointmentsPage({ searchParams }: AppointmentsPag
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <p className="section-kicker">Sales appointments</p>
-          <h1 className="mt-3 font-display text-5xl font-bold tracking-[-0.09em]">
+          <h1 className="mt-3 font-display text-5xl font-bold tracking-wide">
             Book meetings without losing CRM context.
           </h1>
-          <p className="mt-3 text-sm text-[#9eaea8]">
+          <p className="mt-3 text-sm text-[var(--dashboard-muted)]">
             Appointments are planned meeting activities with Google Calendar invites.
           </p>
         </div>
-        <CalendarClock className="hidden size-8 text-[#d8ff62] sm:block" />
+        <CalendarClock className="hidden size-8 text-[var(--dashboard-accent)] sm:block" />
       </div>
 
       <div className="mt-7">

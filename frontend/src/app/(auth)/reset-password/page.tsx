@@ -16,7 +16,7 @@ export default async function ResetPasswordPage({
       title={
         <>
           Refresh your
-          <span className="block text-[#d8ff62]">workspace key.</span>
+          <span className="block text-red-500">workspace key.</span>
         </>
       }
       description="Choose a new password with at least 12 characters. Existing sessions will be revoked after the change."

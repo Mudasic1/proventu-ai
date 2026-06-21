@@ -15,9 +15,9 @@ function applyTheme(theme: Theme) {
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === "undefined") return "dark";
+    if (typeof window === "undefined") return "light";
     const stored = window.localStorage.getItem("proventu-ai-theme");
-    return stored === "light" || stored === "dark" ? stored : "dark";
+    return stored === "light" || stored === "dark" ? stored : "light";
   });
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       aria-label={`Switch to ${isDark ? "light" : "dark"} theme`}
       title={`Switch to ${isDark ? "light" : "dark"} theme`}
-      className="w-full justify-start rounded-lg border-[var(--dashboard-border)] bg-[var(--dashboard-control)] px-3 text-xs font-bold text-[var(--dashboard-muted)] hover:bg-[var(--dashboard-hover)] hover:text-[var(--dashboard-accent)]"
+      className="w-full justify-start rounded-lg border-white/10 bg-white/[0.045] px-3 text-xs font-bold text-[var(--dashboard-sidebar-muted)] hover:bg-[var(--dashboard-sidebar-hover)] hover:text-[var(--dashboard-sidebar-fg)]"
     >
       {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
       <span>{isDark ? "Light mode" : "Dark mode"}</span>

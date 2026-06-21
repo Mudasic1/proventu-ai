@@ -15,6 +15,10 @@ const serverEnvSchema = z
     AI_BACKEND_SHARED_SECRET: z.string().min(32).optional(),
     STRIPE_SECRET_KEY: z.string().regex(/^(sk|rk)_(test|live)_/).optional(),
     STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
+    LINKEDIN_CLIENT_ID: z.string().min(1).optional(),
+    LINKEDIN_CLIENT_SECRET: z.string().min(1).optional(),
+    FACEBOOK_CLIENT_ID: z.string().min(1).optional(),
+    FACEBOOK_CLIENT_SECRET: z.string().min(1).optional(),
     INTERNAL_CRON_SECRET: z.string().min(32).optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
@@ -70,6 +74,24 @@ const serverEnvSchema = z
           "Configure both STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET, or leave both unset.",
       });
     }
+
+    if (Boolean(env.LINKEDIN_CLIENT_ID) !== Boolean(env.LINKEDIN_CLIENT_SECRET)) {
+      context.addIssue({
+        code: "custom",
+        path: ["LINKEDIN_CLIENT_ID"],
+        message:
+          "Configure both LINKEDIN_CLIENT_ID and LINKEDIN_CLIENT_SECRET, or leave both unset.",
+      });
+    }
+
+    if (Boolean(env.FACEBOOK_CLIENT_ID) !== Boolean(env.FACEBOOK_CLIENT_SECRET)) {
+      context.addIssue({
+        code: "custom",
+        path: ["FACEBOOK_CLIENT_ID"],
+        message:
+          "Configure both FACEBOOK_CLIENT_ID and FACEBOOK_CLIENT_SECRET, or leave both unset.",
+      });
+    }
   });
 
 export const serverEnv = serverEnvSchema.parse({
@@ -86,6 +108,10 @@ export const serverEnv = serverEnvSchema.parse({
     process.env.AI_BACKEND_SHARED_SECRET || undefined,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || undefined,
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || undefined,
+  LINKEDIN_CLIENT_ID: process.env.LINKEDIN_CLIENT_ID || undefined,
+  LINKEDIN_CLIENT_SECRET: process.env.LINKEDIN_CLIENT_SECRET || undefined,
+  FACEBOOK_CLIENT_ID: process.env.FACEBOOK_CLIENT_ID || undefined,
+  FACEBOOK_CLIENT_SECRET: process.env.FACEBOOK_CLIENT_SECRET || undefined,
   INTERNAL_CRON_SECRET: process.env.INTERNAL_CRON_SECRET || undefined,
   NODE_ENV: process.env.NODE_ENV,
 });

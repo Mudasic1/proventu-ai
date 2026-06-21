@@ -13,7 +13,7 @@ export default async function AnalyticsPage() {
   ] as const;
   return <div className="grid gap-5"><PageHeader kicker="Analytics" title="Read the operating picture without a black box." description="Reports are calculated directly from workspace CRM, pipeline, task, and campaign records." />
     <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{metrics.map(([label, value, icon]) => <MetricCard key={label} label={label} value={value} icon={icon} />)}</section>
-    <Panel><p className="section-kicker">Won revenue this week</p><p className="mt-3 font-display text-6xl font-bold tracking-[-0.1em] text-[#d8ff62]">{formatCurrency(data.wonRevenueThisWeekCents)}</p><p className="mt-3 text-sm text-[#9eaea8]">Based on deals marked won during the last seven days.</p></Panel>
+    <Panel><p className="section-kicker">Won revenue this week</p><p className="mt-3 font-display text-6xl font-bold tracking-wide text-[var(--dashboard-accent)]">{formatCurrency(data.wonRevenueThisWeekCents)}</p><p className="mt-3 text-sm text-[var(--dashboard-muted)]">Based on deals marked won during the last seven days.</p></Panel>
   </div>;
 }
 

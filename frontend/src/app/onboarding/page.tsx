@@ -31,7 +31,7 @@ export default async function OnboardingPage() {
         <div className="flex items-center gap-2.5">
           <BrandMark />
           <span className="font-display text-lg font-bold tracking-[-0.06em]">
-            Sales<span className="text-[#d8ff62]">Easy</span>
+            Proventu<span className="text-[#d8ff62]">AI</span>
           </span>
         </div>
 

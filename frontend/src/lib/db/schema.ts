@@ -1117,6 +1117,31 @@ export const operationsAuditEntry = pgTable(
   ],
 );
 
+export const socialAccount = pgTable(
+  "social_account",
+  {
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+    platform: text("platform").notNull(),
+    accountName: text("account_name").notNull(),
+    accountId: text("account_id").notNull(),
+    accessToken: text("access_token").notNull(),
+    refreshToken: text("refresh_token"),
+    tokenExpiresAt: timestamp("token_expires_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index("social_account_workspace_idx").on(table.workspaceId),
+    uniqueIndex("social_account_workspace_platform").on(table.workspaceId, table.platform),
+  ],
+);
+
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),

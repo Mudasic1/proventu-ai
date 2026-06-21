@@ -174,7 +174,7 @@ export function BillingSettings({
       {(!stripeConfigured || !hasPlanCatalog) && isOwner ? (
         <section className="rounded-[22px] border border-amber-300/20 bg-amber-300/10 p-5">
           <p className="section-kicker text-amber-100">Billing setup</p>
-          <h2 className="mt-3 font-display text-3xl font-bold tracking-[-0.08em] text-amber-50">
+          <h2 className="mt-3 font-display text-3xl font-bold tracking-wide text-amber-50">
             {!stripeConfigured ? "Stripe configuration is incomplete" : "Plan catalog is empty"}
           </h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-amber-100/80">
@@ -182,54 +182,54 @@ export function BillingSettings({
               ? "Add STRIPE_SECRET_KEY and STRIPE_WEBHOOK_SECRET to .env.local, then restart the app."
               : "Run the catalog sync after migrations so subscription plans and top-up packages are mapped to Stripe Prices."}
           </p>
-          <code className="mt-4 block w-fit rounded-xl bg-[#0b1916] px-3 py-2 text-xs text-[#f4f2ea]">
+          <code className="mt-4 block w-fit rounded-xl bg-[var(--dashboard-elevated)] px-3 py-2 text-xs text-[var(--dashboard-fg)]">
             npm run billing:sync-catalog
           </code>
         </section>
       ) : null}
 
       <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-5">
+        <div className="rounded-[22px] border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-5">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
             <div>
               <p className="section-kicker">Current plan</p>
-              <h2 className="mt-3 font-display text-4xl font-bold leading-none tracking-[-0.08em]">
+              <h2 className="mt-3 font-display text-4xl font-bold leading-none tracking-wide">
                 {subscription?.planName ?? "No paid plan"}
               </h2>
-              <p className="mt-2 text-sm text-[#9eaea8]">
+              <p className="mt-2 text-sm text-[var(--dashboard-muted)]">
                 {subscription
                   ? `${formatCurrency(subscription.priceCents)} / ${subscription.interval}`
                   : "Choose a plan to activate monthly AI credits."}
               </p>
             </div>
-            <span className="w-fit rounded-full border border-[#d8ff62]/20 bg-[#d8ff62]/8 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#d8ff62]">
+            <span className="w-fit rounded-full border border-[var(--dashboard-accent-border)] bg-[var(--dashboard-accent-soft)] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[var(--dashboard-accent)]">
               {subscription ? statusLabel(subscription.status) : "not subscribed"}
             </span>
           </div>
 
           {subscription ? (
-            <div className="mt-6 grid gap-3 text-sm text-[#9eaea8] sm:grid-cols-3">
-              <div className="rounded-2xl bg-[#0b1916]/80 p-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#71817b]">
+            <div className="mt-6 grid gap-3 text-sm text-[var(--dashboard-muted)] sm:grid-cols-3">
+              <div className="rounded-2xl bg-[var(--dashboard-elevated)] p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--dashboard-icon)]">
                   Included credits
                 </p>
-                <p className="mt-2 text-2xl font-bold text-[#f4f2ea]">
+                <p className="mt-2 text-2xl font-bold text-[var(--dashboard-fg)]">
                   {subscription.monthlyIncludedCredits.toLocaleString()}
                 </p>
               </div>
-              <div className="rounded-2xl bg-[#0b1916]/80 p-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#71817b]">
+              <div className="rounded-2xl bg-[var(--dashboard-elevated)] p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--dashboard-icon)]">
                   Period end
                 </p>
-                <p className="mt-2 font-semibold text-[#f4f2ea]">
+                <p className="mt-2 font-semibold text-[var(--dashboard-fg)]">
                   {formatDate(subscription.currentPeriodEnd ?? subscription.renewsAt)}
                 </p>
               </div>
-              <div className="rounded-2xl bg-[#0b1916]/80 p-4">
-                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[#71817b]">
+              <div className="rounded-2xl bg-[var(--dashboard-elevated)] p-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--dashboard-icon)]">
                   Renewal
                 </p>
-                <p className="mt-2 font-semibold text-[#f4f2ea]">
+                <p className="mt-2 font-semibold text-[var(--dashboard-fg)]">
                   {subscription.cancelAtPeriodEnd ? "Cancels at period end" : "Auto-renews"}
                 </p>
               </div>
@@ -243,7 +243,7 @@ export function BillingSettings({
               onClick={() =>
                 runAction("portal", () => postBillingAction("/api/billing/portal"))
               }
-              className="mt-6 inline-flex h-11 items-center gap-2 rounded-xl bg-[#d8ff62] px-4 text-xs font-extrabold uppercase tracking-[0.12em] text-[#10211c] transition hover:bg-[#e5ff92] disabled:cursor-wait disabled:opacity-70"
+              className="mt-6 inline-flex h-11 items-center gap-2 rounded-xl bg-[var(--dashboard-accent)] px-4 text-xs font-extrabold uppercase tracking-[0.12em] text-[var(--dashboard-accent-foreground)] transition hover:bg-[var(--dashboard-accent-hover)] disabled:cursor-wait disabled:opacity-70"
             >
               {busyAction === "portal" ? <Loader2 className="size-4 animate-spin" /> : <ExternalLink className="size-4" />}
               Manage in Stripe
@@ -251,21 +251,21 @@ export function BillingSettings({
           ) : null}
         </div>
 
-        <div className="rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-5">
-          <WalletCards className="size-5 text-[#d8ff62]" />
-          <p className="mt-7 text-[10px] font-bold uppercase tracking-[0.12em] text-[#71817b]">
+        <div className="rounded-[22px] border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-5">
+          <WalletCards className="size-5 text-[var(--dashboard-accent)]" />
+          <p className="mt-7 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--dashboard-icon)]">
             Credit wallet
           </p>
-          <p className="mt-2 font-display text-5xl font-bold tracking-[-0.09em]">
+          <p className="mt-2 font-display text-5xl font-bold tracking-wide">
             {walletTotals.spendable.toLocaleString()}
           </p>
           <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-            <div className="rounded-2xl bg-[#0b1916]/80 p-3">
-              <p className="text-[#71817b]">Reserved</p>
+            <div className="rounded-2xl bg-[var(--dashboard-elevated)] p-3">
+              <p className="text-[var(--dashboard-icon)]">Reserved</p>
               <p className="font-semibold">{walletTotals.reserved.toLocaleString()}</p>
             </div>
-            <div className="rounded-2xl bg-[#0b1916]/80 p-3">
-              <p className="text-[#71817b]">Unresolved</p>
+            <div className="rounded-2xl bg-[var(--dashboard-elevated)] p-3">
+              <p className="text-[var(--dashboard-icon)]">Unresolved</p>
               <p className="font-semibold">{walletTotals.unresolved.toLocaleString()}</p>
             </div>
           </div>
@@ -284,23 +284,23 @@ export function BillingSettings({
           return (
             <article
               key={plan.id}
-              className="rounded-[22px] border border-white/[0.08] bg-[#0b1916] p-5"
+              className="rounded-[22px] border border-[var(--dashboard-border)] bg-[var(--dashboard-elevated)] p-5"
             >
-              <CreditCard className="size-5 text-[#d8ff62]" />
-              <h3 className="mt-5 font-display text-3xl font-bold tracking-[-0.08em]">
+              <CreditCard className="size-5 text-[var(--dashboard-accent)]" />
+              <h3 className="mt-5 font-display text-3xl font-bold tracking-wide">
                 {plan.name}
               </h3>
-              <p className="mt-1 text-sm text-[#9eaea8]">
+              <p className="mt-1 text-sm text-[var(--dashboard-muted)]">
                 {formatCurrency(plan.priceCents)} / {plan.interval}
               </p>
-              <p className="mt-4 min-h-12 text-sm leading-6 text-[#82928c]">
+              <p className="mt-4 min-h-12 text-sm leading-6 text-[var(--dashboard-soft)]">
                 {plan.description}
               </p>
-              <p className="mt-4 text-sm font-semibold text-[#f4f2ea]">
+              <p className="mt-4 text-sm font-semibold text-[var(--dashboard-fg)]">
                 {plan.monthlyIncludedCredits.toLocaleString()} monthly credits
               </p>
               {plan.features.length > 0 ? (
-                <ul className="mt-4 grid gap-2 text-xs text-[#9eaea8]">
+                <ul className="mt-4 grid gap-2 text-xs text-[var(--dashboard-muted)]">
                   {plan.features.slice(0, 4).map((feature) => (
                     <li key={feature}>{feature}</li>
                   ))}
@@ -319,7 +319,7 @@ export function BillingSettings({
                         }),
                       )
                     }
-                    className="mt-6 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#d8ff62]/25 px-3 text-xs font-extrabold uppercase tracking-[0.12em] text-[#d8ff62] transition hover:bg-[#d8ff62]/10 disabled:cursor-not-allowed disabled:border-white/[0.08] disabled:text-[#71817b]"
+                    className="mt-6 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-[var(--dashboard-accent-border)] px-3 text-xs font-extrabold uppercase tracking-[0.12em] text-[var(--dashboard-accent)] transition hover:bg-[var(--dashboard-accent-soft)] disabled:cursor-not-allowed disabled:border-[var(--dashboard-border)] disabled:text-[var(--dashboard-icon)]"
                   >
                     {busyAction === actionId ? <Loader2 className="size-4 animate-spin" /> : null}
                     {!stripeConfigured
@@ -329,7 +329,7 @@ export function BillingSettings({
                         : "Start checkout"}
                   </button>
                   {isCurrent ? (
-                    <p className="mt-3 text-xs leading-5 text-[#71817b]">
+                    <p className="mt-3 text-xs leading-5 text-[var(--dashboard-icon)]">
                       Use Manage in Stripe above for payment method, invoice, cancellation,
                       or plan changes.
                     </p>
@@ -339,35 +339,35 @@ export function BillingSettings({
             </article>
           );
         }) : (
-          <div className="rounded-[22px] border border-dashed border-white/[0.1] bg-[#0b1916] p-5 text-sm text-[#82928c] lg:col-span-3">
+          <div className="rounded-[22px] border border-dashed border-[var(--dashboard-border)] bg-[var(--dashboard-elevated)] p-5 text-sm text-[var(--dashboard-soft)] lg:col-span-3">
             No active subscription plans are available yet.
           </div>
         )}
       </section>
 
-      <section className="rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-5">
+      <section className="rounded-[22px] border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-5">
         <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end">
           <div>
             <p className="section-kicker">Top-ups</p>
-            <h2 className="mt-2 font-display text-3xl font-bold tracking-[-0.08em]">
+            <h2 className="mt-2 font-display text-3xl font-bold tracking-wide">
               Add non-expiring credits
             </h2>
           </div>
           {!hasActiveSubscription ? (
-            <p className="text-xs text-[#82928c]">Top-ups unlock after a paid plan is active.</p>
+            <p className="text-xs text-[var(--dashboard-soft)]">Top-ups unlock after a paid plan is active.</p>
           ) : null}
         </div>
         <div className="mt-5 grid gap-3 md:grid-cols-3">
           {hasTopUpCatalog ? topUps.map((topUp) => {
             const actionId = `top-up:${topUp.id}`;
             return (
-              <div key={topUp.id} className="rounded-2xl bg-[#0b1916] p-4">
+              <div key={topUp.id} className="rounded-2xl bg-[var(--dashboard-elevated)] p-4">
                 <p className="font-semibold">{topUp.name}</p>
-                <p className="mt-1 text-sm text-[#9eaea8]">
+                <p className="mt-1 text-sm text-[var(--dashboard-muted)]">
                   {topUp.grantedCredits.toLocaleString()} credits for{" "}
                   {formatCurrency(topUp.priceCents)}
                 </p>
-                <p className="mt-3 min-h-10 text-xs leading-5 text-[#71817b]">
+                <p className="mt-3 min-h-10 text-xs leading-5 text-[var(--dashboard-icon)]">
                   {topUp.description}
                 </p>
                 {isOwner ? (
@@ -382,7 +382,7 @@ export function BillingSettings({
                         }),
                       )
                     }
-                    className="mt-4 inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-white/[0.06] px-3 text-xs font-bold uppercase tracking-[0.1em] text-[#f4f2ea] transition hover:bg-white/[0.1] disabled:cursor-not-allowed disabled:text-[#71817b]"
+                    className="mt-4 inline-flex h-9 w-full items-center justify-center gap-2 rounded-xl bg-[var(--dashboard-input)] px-3 text-xs font-bold uppercase tracking-[0.1em] text-[var(--dashboard-fg)] transition hover:bg-[var(--dashboard-hover)] disabled:cursor-not-allowed disabled:text-[var(--dashboard-icon)]"
                   >
                     {busyAction === actionId ? <Loader2 className="size-4 animate-spin" /> : null}
                     {stripeConfigured ? "Buy top-up" : "Stripe not ready"}
@@ -391,7 +391,7 @@ export function BillingSettings({
               </div>
             );
           }) : (
-            <p className="rounded-2xl border border-dashed border-white/[0.1] p-5 text-sm text-[#82928c] md:col-span-3">
+            <p className="rounded-2xl border border-dashed border-[var(--dashboard-border)] p-5 text-sm text-[var(--dashboard-soft)] md:col-span-3">
               No active top-up packages are available yet.
             </p>
           )}
@@ -399,16 +399,16 @@ export function BillingSettings({
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-5">
+        <div className="rounded-[22px] border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-5">
           <p className="section-kicker">Payment history</p>
           <div className="mt-4 grid gap-3">
             {payments.length > 0 ? (
               payments.map((payment) => (
-                <div key={payment.id} className="rounded-2xl bg-[#0b1916] p-4">
+                <div key={payment.id} className="rounded-2xl bg-[var(--dashboard-elevated)] p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold">{payment.safeSummary}</p>
-                      <p className="mt-1 text-xs text-[#71817b]">
+                      <p className="mt-1 text-xs text-[var(--dashboard-icon)]">
                         {statusLabel(payment.kind)} - {formatDate(payment.occurredAt)}
                       </p>
                     </div>
@@ -424,7 +424,7 @@ export function BillingSettings({
                         openPaymentInvoice(payment.id),
                       )
                     }
-                    className="mt-3 inline-flex h-8 items-center gap-2 rounded-lg border border-white/[0.08] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-[#d8ff62] transition hover:bg-[#d8ff62]/10 disabled:cursor-wait disabled:text-[#71817b]"
+                    className="mt-3 inline-flex h-8 items-center gap-2 rounded-lg border border-[var(--dashboard-border)] px-3 text-[11px] font-bold uppercase tracking-[0.1em] text-[var(--dashboard-accent)] transition hover:bg-[var(--dashboard-accent-soft)] disabled:cursor-wait disabled:text-[var(--dashboard-icon)]"
                   >
                     {busyAction === `invoice:${payment.id}` ? (
                       <Loader2 className="size-3.5 animate-spin" />
@@ -436,23 +436,23 @@ export function BillingSettings({
                 </div>
               ))
             ) : (
-              <p className="rounded-2xl border border-dashed border-white/[0.1] p-5 text-sm text-[#82928c]">
+              <p className="rounded-2xl border border-dashed border-[var(--dashboard-border)] p-5 text-sm text-[var(--dashboard-soft)]">
                 No reconciled Stripe payments yet.
               </p>
             )}
           </div>
         </div>
 
-        <div className="rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-5">
+        <div className="rounded-[22px] border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-5">
           <p className="section-kicker">Credit ledger</p>
           <div className="mt-4 grid gap-3">
             {ledger.length > 0 ? (
               ledger.map((entry) => (
-                <div key={entry.id} className="rounded-2xl bg-[#0b1916] p-4">
+                <div key={entry.id} className="rounded-2xl bg-[var(--dashboard-elevated)] p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-sm font-semibold">{entry.reason}</p>
-                      <p className="mt-1 text-xs text-[#71817b]">
+                      <p className="mt-1 text-xs text-[var(--dashboard-icon)]">
                         {statusLabel(entry.entryType)} - {formatDate(entry.createdAt)}
                       </p>
                     </div>
@@ -464,7 +464,7 @@ export function BillingSettings({
                 </div>
               ))
             ) : (
-              <p className="rounded-2xl border border-dashed border-white/[0.1] p-5 text-sm text-[#82928c]">
+              <p className="rounded-2xl border border-dashed border-[var(--dashboard-border)] p-5 text-sm text-[var(--dashboard-soft)]">
                 Credit activity appears here after invoices or top-ups are processed.
               </p>
             )}
@@ -473,7 +473,7 @@ export function BillingSettings({
       </section>
 
       {!isOwner ? (
-        <p className="text-sm text-[#82928c]">
+        <p className="text-sm text-[var(--dashboard-soft)]">
           Billing actions are owner-only. You can still view plan, wallet, payment,
           and credit activity for this workspace.
         </p>

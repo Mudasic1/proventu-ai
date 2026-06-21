@@ -24,7 +24,7 @@ type ContactOption = {
 };
 
 const inputClassName =
-  "border-white/[0.08] bg-[#07110f]/82 text-[#f4f2ea] placeholder:text-[#5f716a]";
+  "border-[var(--dashboard-border)] bg-[var(--dashboard-input)] text-[var(--dashboard-fg)] placeholder:text-[var(--dashboard-subtle)]";
 
 function contactName(contact: Pick<ContactOption, "firstName" | "lastName">) {
   return `${contact.firstName} ${contact.lastName}`.trim() || "Unnamed contact";
@@ -81,20 +81,20 @@ export function AppointmentScheduler({
           <form
             ref={formRef}
             action={formAction}
-            className="grid gap-4 rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-4 sm:p-5"
+            className="grid gap-4 rounded-[22px] border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-4 sm:p-5"
           >
             <input type="hidden" name="syncToGoogleCalendar" value="on" />
             <input type="hidden" name="sendWithGmail" value="on" />
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#d8ff62]">
+                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--dashboard-accent)]">
                   Schedule appointment
                 </p>
-                <p className="mt-1 text-xs leading-5 text-[#71817b]">
+                <p className="mt-1 text-xs leading-5 text-[var(--dashboard-icon)]">
                   Creates a Calendar invite and sends the appointment details by Gmail.
                 </p>
               </div>
-              <CalendarCheck2 className="size-5 text-[#d8ff62]" />
+              <CalendarCheck2 className="size-5 text-[var(--dashboard-accent)]" />
             </div>
 
             <div className="grid gap-2">
@@ -104,7 +104,7 @@ export function AppointmentScheduler({
                 name="contactId"
                 className={inputClassName}
                 value={selectedContactId}
-                onChange={(event) => setSelectedContactId(event.target.value)}
+                onValueChange={setSelectedContactId}
                 placeholder="Choose contact"
                 required
                 options={contacts.map((contact) => ({
@@ -140,7 +140,7 @@ export function AppointmentScheduler({
               {fieldError(state.fieldErrors, "body")}
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-4">
+            <div className="grid gap-3">
               <div className="grid gap-2">
                 <Label htmlFor="appointmentDate">Date</Label>
                 <Input
@@ -196,15 +196,15 @@ export function AppointmentScheduler({
             <Button
               type="submit"
               disabled={!canSchedule || isPending}
-              className="h-11 rounded-full bg-[#d8ff62] px-4 font-bold text-[#10211c] hover:bg-[#e5ff92]"
+              className="h-11 rounded-full bg-[var(--dashboard-accent)] px-4 font-bold text-[var(--dashboard-accent-foreground)] hover:bg-[var(--dashboard-accent-hover)]"
             >
               {isPending ? <LoaderCircle className="mr-2 size-4 animate-spin" /> : null}
               Schedule and send email
             </Button>
             {!contacts.length ? (
-              <p className="text-xs text-[#9eaea8]">Add a contact before scheduling appointments.</p>
+              <p className="text-xs text-[var(--dashboard-muted)]">Add a contact before scheduling appointments.</p>
             ) : !hasGoogleBookingAccess ? (
-              <p className="text-xs text-[#9eaea8]">
+              <p className="text-xs text-[var(--dashboard-muted)]">
                 Connect Google Calendar and Gmail before scheduling appointments.
               </p>
             ) : null}
@@ -214,11 +214,11 @@ export function AppointmentScheduler({
             googleStatus.configured ? (
               <GoogleConnectButton capability="crm" callbackURL="/sales/appointments" />
             ) : (
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.025] p-4">
-                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[#d8ff62]">
+              <div className="rounded-2xl border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-4">
+                <p className="text-xs font-extrabold uppercase tracking-[0.16em] text-[var(--dashboard-accent)]">
                   Google Calendar and Gmail not configured
                 </p>
-                <p className="mt-2 text-sm leading-6 text-[#aebbb6]">
+                <p className="mt-2 text-sm leading-6 text-[var(--dashboard-muted)]">
                   Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to
                   frontend/.env.local, then restart the frontend dev server.
                   Google API keys such as GOOGLE_API_KEY cannot create Calendar
@@ -243,9 +243,9 @@ function AppointmentList({ appointments }: { appointments: ContactActivityRecord
           <AppointmentCard key={appointment.id} appointment={appointment} />
         ))
       ) : (
-        <div className="rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-6">
-          <p className="text-sm font-bold text-[#f4f2ea]">No appointments scheduled.</p>
-          <p className="mt-2 text-sm leading-6 text-[#9eaea8]">
+        <div className="rounded-[22px] border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-6">
+          <p className="text-sm font-bold text-[var(--dashboard-fg)]">No appointments scheduled.</p>
+          <p className="mt-2 text-sm leading-6 text-[var(--dashboard-muted)]">
             Future meetings created from this page appear here.
           </p>
         </div>
@@ -275,30 +275,30 @@ function AppointmentCard({ appointment }: { appointment: ContactActivityRecord }
   const displayName = `${appointment.contactFirstName} ${appointment.contactLastName}`.trim();
 
   return (
-    <article className="rounded-[18px] border border-white/[0.08] bg-white/[0.025] p-4">
+    <article className="rounded-[18px] border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-bold text-[#f4f2ea]">{appointment.summary}</p>
+          <p className="text-sm font-bold text-[var(--dashboard-fg)]">{appointment.summary}</p>
           <Link
             href={`/crm/contacts/${appointment.contactId}`}
-            className="mt-1 inline-flex text-xs font-bold text-[#d8ff62] hover:text-[#e5ff92]"
+            className="mt-1 inline-flex text-xs font-bold text-[var(--dashboard-accent)] hover:text-[var(--dashboard-accent-hover)]"
           >
             {displayName || "Contact profile"}
           </Link>
         </div>
-        <span className="inline-flex items-center gap-1 rounded-full border border-[#d8ff62]/15 bg-[#d8ff62]/8 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#d8ff62]">
+        <span className="inline-flex items-center gap-1 rounded-full border border-[var(--dashboard-accent-border)] bg-[var(--dashboard-accent-soft)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--dashboard-accent)]">
           <UsersRound className="size-3" />
           Meeting
         </span>
       </div>
-      <div className="mt-4 grid gap-2 text-xs text-[#9eaea8] sm:grid-cols-2">
+      <div className="mt-4 grid gap-2 text-xs text-[var(--dashboard-muted)] sm:grid-cols-2">
         <p className="flex items-center gap-2">
-          <CalendarDays className="size-3.5 text-[#d8ff62]" />
+          <CalendarDays className="size-3.5 text-[var(--dashboard-accent)]" />
           {scheduledAt ? new Date(scheduledAt).toLocaleString() : "Time not set"}
         </p>
         <p>{duration} minutes</p>
         <p className="flex items-center gap-2 sm:col-span-2">
-          <Mail className="size-3.5 text-[#d8ff62]" />
+          <Mail className="size-3.5 text-[var(--dashboard-accent)]" />
           {attendee || "No attendee email"}
         </p>
       </div>
@@ -307,7 +307,7 @@ function AppointmentCard({ appointment }: { appointment: ContactActivityRecord }
           href={calendarLink}
           target="_blank"
           rel="noreferrer"
-          className="mt-4 inline-flex text-xs font-bold text-[#d8ff62] hover:text-[#e5ff92]"
+          className="mt-4 inline-flex text-xs font-bold text-[var(--dashboard-accent)] hover:text-[var(--dashboard-accent-hover)]"
         >
           Open Google Calendar event
         </a>

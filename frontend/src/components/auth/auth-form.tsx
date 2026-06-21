@@ -54,7 +54,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     <form className="grid gap-4" onSubmit={handleSubmit}>
       {isSignUp ? (
         <div className="grid gap-2">
-          <Label htmlFor="name">Your name</Label>
+          <Label htmlFor="name" className="tracking-wide">Your name</Label>
           <Input
             id="name"
             name="name"
@@ -66,7 +66,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       ) : null}
 
       <div className="grid gap-2">
-        <Label htmlFor="email">Work email</Label>
+        <Label htmlFor="email" className="tracking-wide">Work email</Label>
         <Input
           id="email"
           name="email"
@@ -79,11 +79,11 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       <div className="grid gap-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password" className="tracking-wide">Password</Label>
           {!isSignUp ? (
             <Link
               href="/forgot-password"
-              className="text-xs font-bold text-[#d8ff62] transition hover:text-[#e5ff92]"
+              className="text-xs font-bold tracking-wide text-red-500 transition hover:text-red-400"
             >
               Forgot password?
             </Link>
@@ -103,7 +103,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       {error ? (
         <p
           role="alert"
-          className="rounded-xl border border-red-300/20 bg-red-300/8 px-3 py-2.5 text-sm leading-5 text-red-100"
+          className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm leading-5 text-red-700"
         >
           {error}
         </p>
@@ -112,7 +112,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       <Button
         type="submit"
         size="lg"
-        className="mt-1 h-11 rounded-full bg-[#d8ff62] px-5 font-bold text-[#10211c] shadow-[0_10px_34px_rgba(216,255,98,0.12)] hover:bg-[#e5ff92]"
+        className="mt-1 h-11 rounded-full bg-gradient-to-r from-red-500 to-rose-500 px-5 font-bold text-white shadow-[0_10px_34px_rgba(255,92,92,0.25)] hover:from-red-400 hover:to-rose-400"
         disabled={isPending}
       >
         {isPending ? (
@@ -127,11 +127,11 @@ export function AuthForm({ mode }: AuthFormProps) {
             : "Open your workspace"}
       </Button>
 
-      <p className="text-center text-sm text-[#8f9f99]">
+      <p className="text-center text-sm tracking-wide text-gray-500">
         {isSignUp ? "Already have access?" : "New to Proventu AI?"}{" "}
         <Link
           href={isSignUp ? "/signin" : "/signup"}
-          className="font-bold text-[#d8ff62] transition hover:text-[#e5ff92]"
+          className="font-bold tracking-wide text-red-500 transition hover:text-red-400"
         >
           {isSignUp ? "Log in" : "Create an account"}
         </Link>

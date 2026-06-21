@@ -1,6 +1,18 @@
 import type { Metadata } from "next";
+import { Bebas_Neue, Outfit } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+
+const bebasNeue = Bebas_Neue({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-bebas-neue",
+});
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-outfit",
+});
 
 export const metadata: Metadata = {
   title: "Proventu AI | Put Your Revenue Work in Motion",
@@ -17,7 +29,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className="h-full antialiased"
+      className={`h-full antialiased ${bebasNeue.variable} ${outfit.variable}`}
     >
       <body className="min-h-full">
         {children}

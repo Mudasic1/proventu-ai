@@ -42,17 +42,17 @@ export default async function ActivityPage({ searchParams }: ActivityPageProps) 
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
           <p className="section-kicker">CRM activity</p>
-          <h1 className="mt-3 font-display text-5xl font-bold tracking-[-0.09em]">
+          <h1 className="mt-3 font-display text-5xl font-bold tracking-wide">
             Every touchpoint in one place.
           </h1>
-          <p className="mt-3 text-sm text-[#9eaea8]">
+          <p className="mt-3 text-sm text-[var(--dashboard-muted)]">
             {activities.length} visible activities across active contacts.
           </p>
         </div>
-        <Activity className="hidden size-8 text-[#d8ff62] sm:block" />
+        <Activity className="hidden size-8 text-[var(--dashboard-accent)] sm:block" />
       </div>
 
-      <form className="mt-7 grid gap-2 rounded-[20px] border border-white/[0.08] bg-white/[0.025] p-3 sm:grid-cols-[1fr_180px_auto]">
+      <form className="mt-7 grid gap-2 rounded-[20px] border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-3 sm:grid-cols-[1fr_180px_auto]">
         <Select
           name="contactId"
           defaultValue={selectedContactId ?? "all"}
@@ -76,7 +76,7 @@ export default async function ActivityPage({ searchParams }: ActivityPageProps) 
             { label: "SMS", value: "sms" },
           ]}
         />
-        <Button className="h-11 rounded-xl bg-white/[0.08] px-4 font-bold text-[#f4f2ea] hover:bg-white/[0.14]">
+        <Button className="h-11 rounded-xl bg-[var(--dashboard-hover)] px-4 font-bold text-[var(--dashboard-fg)] hover:bg-[var(--dashboard-hover)]">
           <Filter />
           Filter
         </Button>

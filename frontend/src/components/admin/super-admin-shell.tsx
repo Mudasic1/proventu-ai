@@ -37,7 +37,7 @@ export function SuperAdminShell({
           <div className="flex items-center justify-between px-1 lg:px-2">
             <Link href="/admin" className="flex items-center gap-2.5">
               <BrandMark />
-              <span className="font-display text-[17px] font-bold tracking-[-0.06em]">Sales<span className="text-[#d8ff62]">Easy</span></span>
+              <span className="font-display text-[17px] font-bold tracking-[-0.06em]">Proventu<span className="text-[#d8ff62]">AI</span></span>
             </Link>
             <ShieldCheck className="size-4 text-[#d8ff62]" />
           </div>
