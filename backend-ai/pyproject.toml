@@ -1,7 +1,7 @@
 [project]
 name = "backend-ai"
-version = "0.1.0"
-description = "Proventu AI supervised AI orchestration service"
+version = "0.2.0"
+description = "Proventu AI — OpenAI Agents SDK + MCP autonomous AI orchestration service"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -12,19 +12,26 @@ dependencies = [
     "uvicorn>=0.34.0",
     "sqlmodel>=0.0.22",
     "sqlalchemy>=2.0.0",
-    "google-antigravity>=0.1.4",
-    "qdrant-client>=1.18.0",
+    # OpenAI Agents SDK (provider-agnostic multi-agent orchestration)
+    "openai-agents>=0.17.0",
+    # OpenAI client (used by Agents SDK; also points to Google endpoint)
+    "openai>=1.84.0",
+    # MCP SDK — build & serve Model Context Protocol servers
+    "mcp>=1.9.0",
+    # HTTP client for web-search tool and provider calls
+    "httpx>=0.28.0",
 ]
 
 [dependency-groups]
 dev = [
-    "httpx>=0.28.0",
     "pytest>=8.3.0",
+    "pytest-asyncio>=0.25.0",
     "ruff>=0.9.0",
 ]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+asyncio_mode = "auto"
 
 [tool.ruff]
 line-length = 100

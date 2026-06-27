@@ -1,4 +1,6 @@
-from uuid import UUID, uuid4
+"""Tests for the campaign plan route and service (SDK-backed)."""
+
+from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
@@ -6,18 +8,17 @@ from app.api import app
 from app.api.deps import get_campaign_plan_service, require_internal_secret
 from app.schemas import (
     CampaignPlanDraft,
-    CampaignPlanResponse,
     EmailDraft,
     FollowUpTaskDraft,
     SocialPostDraft,
 )
-from app.services import CampaignPlanService, GeneratedPlan
+from app.services.campaigns import CampaignPlanService, GeneratedPlan
 
 
 class MemoryRepository:
     def __init__(self):
-        self.completed: dict[tuple[UUID, UUID], CampaignPlanResponse] = {}
-        self.requests: dict[UUID, tuple[UUID, UUID]] = {}
+        self.completed = {}
+        self.requests = {}
 
     def find_completed(self, workspace_id, request_key):
         return self.completed.get((workspace_id, request_key))
@@ -34,11 +35,13 @@ class MemoryRepository:
         return None
 
 
-class StubGenerator:
+class AsyncStubGenerator:
+    """Async stub — matches the new Protocol (async generate)."""
+
     def __init__(self):
         self.calls = 0
 
-    def generate(self, request):
+    async def generate(self, request):
         self.calls += 1
         return GeneratedPlan(
             draft=CampaignPlanDraft(
@@ -104,7 +107,7 @@ def client_with_service(service):
 
 def test_campaign_plan_is_structured_flagged_and_idempotent():
     repository = MemoryRepository()
-    generator = StubGenerator()
+    generator = AsyncStubGenerator()
     client = client_with_service(CampaignPlanService(repository, generator, "test-model"))
     request_payload = payload()
 
@@ -121,7 +124,7 @@ def test_campaign_plan_is_structured_flagged_and_idempotent():
 
 def test_campaign_plan_rejects_invalid_workspace_context():
     repository = MemoryRepository()
-    generator = StubGenerator()
+    generator = AsyncStubGenerator()
     client = client_with_service(CampaignPlanService(repository, generator, "test-model"))
     request_payload = payload()
     request_payload["workspace_id"] = "not-a-uuid"

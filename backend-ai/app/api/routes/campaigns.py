@@ -1,3 +1,5 @@
+"""Campaign plan route — /v1/campaign-plans (SDK-backed, async)."""
+
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -14,19 +16,23 @@ router = APIRouter(dependencies=[Depends(require_internal_secret)])
     "/v1/campaign-plans",
     response_model=CampaignPlanResponse,
 )
-def create_campaign_plan(
+async def create_campaign_plan(
     request: CampaignPlanRequest,
     service: CampaignPlanService = Depends(get_campaign_plan_service),
 ) -> CampaignPlanResponse:
+    """Generate a supervised campaign plan draft.
+
+    Uses the OpenAI Agents SDK + Google AI. Returns social posts, email drafts,
+    follow-up tasks, and compliance risk flags. All outputs require human
+    review before publishing or sending.
+    """
     try:
-        return service.create_plan(request)
+        return await service.create_plan(request)
     except RuntimeError as error:
         logger.warning(
-            "Campaign plan request failed safely.",
-            extra={
-                "workspace_id": str(request.workspace_id),
-                "campaign_id": str(request.campaign_id),
-            },
+            "Campaign plan request failed safely. workspace=%s campaign=%s",
+            request.workspace_id,
+            request.campaign_id,
         )
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -34,11 +40,9 @@ def create_campaign_plan(
         ) from error
     except Exception as error:
         logger.exception(
-            "Campaign plan request failed unexpectedly.",
-            extra={
-                "workspace_id": str(request.workspace_id),
-                "campaign_id": str(request.campaign_id),
-            },
+            "Campaign plan request failed unexpectedly. workspace=%s campaign=%s",
+            request.workspace_id,
+            request.campaign_id,
         )
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,

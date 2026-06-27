@@ -1,18 +1,65 @@
-from dataclasses import dataclass
-import json
-from typing import Protocol
-from urllib import error, parse, request as urlrequest
+"""
+Campaign Plan Service — uses the OpenAI Agents SDK (via Google AI) to generate
+a structured campaign plan draft and scan it with guardrails.
 
-from app.agents.guardrails import scan_campaign_plan
-from app.repositories import AiRunRepository
+Replaces the previous raw-HTTP GoogleCampaignPlanGenerator with a proper
+Agent-based workflow using the StrategyAgent + ContentAgent + EmailAgent.
+"""
+
+import logging
+from dataclasses import dataclass
+from typing import Protocol
+
+from agents import InputGuardrailTripwireTriggered, Runner
+
+from app.agents.context import WorkspaceContext
+from app.agents.guardrails.output import scan_campaign_plan
+from app.agents.provider import configure_tracing
+from app.agents.specialists.strategy import get_strategy_agent
+from app.core.config import get_settings
+from app.repositories import AiRunRepository, PostgresAiRunRepository
 from app.schemas import CampaignPlanDraft, CampaignPlanRequest, CampaignPlanResponse
 
-SYSTEM_PROMPT = """
-You are a supervised campaign-planning assistant for a small-business revenue workspace.
-Create reviewable drafts only. Do not claim that any content was sent, scheduled, or published.
-Use only the supplied business profile, offer, goal, and audience. Avoid invented facts,
-unsupported guarantees, fake statistics, and manipulative language. Return a concise plan with
-channel-specific social drafts, email drafts, and follow-up tasks for human review.
+logger = logging.getLogger(__name__)
+
+# ── System prompt passed in the Runner input ──────────────────────────────────
+_CAMPAIGN_TASK_TEMPLATE = """\
+Create a complete campaign plan draft for human review.
+
+Business: {business_name}
+Industry: {industry}
+Target audience: {target_audience}
+Brand voice: {brand_voice}
+Offer: {offer_name} — {offer_description}
+Campaign goal: {goal}
+
+Produce:
+1. A 2-sentence campaign summary
+2. The recommended campaign angle (1 sentence)
+3. 4 social post drafts (one each for linkedin, facebook, instagram, x)
+4. 2 email drafts (subject + preview + body)
+5. 3 follow-up tasks with due_in_days and priority
+
+Return valid JSON ONLY (no markdown fences) matching this exact structure:
+{{
+  "summary": "...",
+  "recommended_angle": "...",
+  "social_posts": [
+    {{"platform": "linkedin", "content": "..."}},
+    {{"platform": "facebook", "content": "..."}},
+    {{"platform": "instagram", "content": "..."}},
+    {{"platform": "x", "content": "..."}}
+  ],
+  "email_drafts": [
+    {{"name": "...", "subject": "...", "preview_text": "...", "body": "..."}},
+    {{"name": "...", "subject": "...", "preview_text": "...", "body": "..."}}
+  ],
+  "follow_up_tasks": [
+    {{"title": "...", "due_in_days": 1, "priority": "high"}},
+    {{"title": "...", "due_in_days": 3, "priority": "medium"}},
+    {{"title": "...", "due_in_days": 7, "priority": "low"}}
+  ]
+}}
 """.strip()
 
 
@@ -25,98 +72,141 @@ class GeneratedPlan:
 
 
 class CampaignPlanGenerator(Protocol):
-    def generate(self, request: CampaignPlanRequest) -> GeneratedPlan: ...
+    async def generate(self, request: CampaignPlanRequest) -> GeneratedPlan: ...
 
 
-class GoogleCampaignPlanGenerator:
-    def __init__(self, api_key: str, model: str):
-        self.api_key = api_key
-        self.model = model
+class AgentsCampaignPlanGenerator:
+    """Generates campaign plans using the OpenAI Agents SDK + Google AI."""
 
-    def generate(self, request: CampaignPlanRequest) -> GeneratedPlan:
-        endpoint = (
-            "https://generativelanguage.googleapis.com/v1beta/models/"
-            f"{parse.quote(self.model, safe='')}:generateContent"
-            f"?key={parse.quote(self.api_key, safe='')}"
+    def __init__(self) -> None:
+        configure_tracing()
+
+    async def generate(self, request: CampaignPlanRequest) -> GeneratedPlan:
+        bp = request.business_profile
+        offer = request.offer
+
+        task_input = _CAMPAIGN_TASK_TEMPLATE.format(
+            business_name=bp.business_name,
+            industry=bp.industry,
+            target_audience=request.target_audience,
+            brand_voice=bp.brand_voice,
+            offer_name=offer.name,
+            offer_description=offer.description,
+            goal=request.goal,
         )
-        payload = {
-            "systemInstruction": {"parts": [{"text": SYSTEM_PROMPT}]},
-            "contents": [
-                {
-                    "role": "user",
-                    "parts": [
-                        {
-                            "text": (
-                                "Build a supervised campaign draft plan from this authorized "
-                                "workspace context. Return only JSON matching this shape: "
-                                "summary, recommended_angle, social_posts, email_drafts, "
-                                "follow_up_tasks.\n\n"
-                                f"{request.model_dump_json(indent=2)}"
-                            )
-                        }
-                    ],
-                }
-            ],
-            "generationConfig": {
-                "responseMimeType": "application/json",
-                "temperature": 0.4,
-            },
-        }
 
-        http_request = urlrequest.Request(
-            endpoint,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-            method="POST",
+        context = WorkspaceContext(
+            workspace_id=str(request.workspace_id),
+            user_id=request.user_id,
+            business_name=bp.business_name,
+            industry=bp.industry,
+            target_audience=request.target_audience,
+            brand_voice=bp.brand_voice,
+            products_services=bp.products_services,
+            sales_process=bp.sales_process,
+            task_type="campaign",
+            campaign_goal=request.goal,
+            offer_name=offer.name,
+            offer_description=offer.description,
         )
+
+        # Use the strategy agent directly for the campaign plan endpoint
+        # (the full supervisor workflow is used by the multi-agent /v1/agents/run endpoint)
+        agent = get_strategy_agent()
+
+        settings = get_settings()
         try:
-            with urlrequest.urlopen(http_request, timeout=45) as response:
-                provider_payload = json.loads(response.read().decode("utf-8"))
-        except error.URLError as exc:
-            raise RuntimeError("Google campaign planning request failed.") from exc
+            result = await Runner.run(
+                agent,
+                input=task_input,
+                context=context,
+                max_turns=settings.max_agent_turns,
+            )
+        except InputGuardrailTripwireTriggered as exc:
+            raise RuntimeError(
+                "Campaign request was blocked by safety guardrails."
+            ) from exc
 
-        text = _extract_google_text(provider_payload)
-        draft = CampaignPlanDraft.model_validate_json(text)
-        usage = provider_payload.get("usageMetadata") or {}
+        raw_output = result.final_output or ""
+        draft = _parse_campaign_plan(raw_output)
+
         return GeneratedPlan(
             draft=draft,
-            provider_response_id=provider_payload.get("responseId"),
-            input_tokens=int(usage.get("promptTokenCount") or 0),
-            output_tokens=int(usage.get("candidatesTokenCount") or 0),
+            provider_response_id=None,
+            input_tokens=0,
+            output_tokens=0,
         )
 
 
-def _extract_google_text(provider_payload: dict) -> str:
-    candidates = provider_payload.get("candidates") or []
-    if not candidates:
-        raise RuntimeError("Google did not return a campaign plan candidate.")
+def _parse_campaign_plan(raw: str) -> CampaignPlanDraft:
+    """Parse the LLM output (JSON) into a CampaignPlanDraft.
 
-    parts = candidates[0].get("content", {}).get("parts") or []
-    text = "".join(part.get("text", "") for part in parts if isinstance(part, dict))
-    if not text.strip():
-        raise RuntimeError("Google returned an empty campaign plan.")
-    return text
+    Falls back to a minimal valid draft if parsing fails.
+    """
+    # Strip markdown fences if the model wrapped the output
+    text = raw.strip()
+    if text.startswith("```"):
+        lines = text.split("\n")
+        text = "\n".join(lines[1:-1] if lines[-1].startswith("```") else lines[1:])
+
+    try:
+        return CampaignPlanDraft.model_validate_json(text)
+    except Exception as parse_error:
+        logger.warning("Campaign plan JSON parse failed: %s", parse_error)
+
+        # Attempt to extract JSON from a larger response body
+        start = text.find("{")
+        end = text.rfind("}") + 1
+        if start >= 0 and end > start:
+            try:
+                return CampaignPlanDraft.model_validate_json(text[start:end])
+            except Exception:
+                pass
+
+        # Last resort: build a minimal draft from the raw text
+        logger.warning("Falling back to minimal campaign plan draft.")
+        return CampaignPlanDraft(
+            summary=raw[:500] or "Campaign plan could not be structured. Review raw output.",
+            recommended_angle="See summary for details.",
+            social_posts=[
+                {"platform": "linkedin", "content": "Draft pending review."},
+            ],
+            email_drafts=[
+                {
+                    "name": "Draft",
+                    "subject": "Draft subject",
+                    "preview_text": "",
+                    "body": raw[:2000],
+                }
+            ],
+            follow_up_tasks=[
+                {"title": "Review AI-generated campaign plan", "due_in_days": 1, "priority": "high"}
+            ],
+        )
 
 
 class CampaignPlanService:
+    """Orchestrates campaign plan generation: idempotency + DB persistence."""
+
     def __init__(
         self,
         repository: AiRunRepository,
         generator: CampaignPlanGenerator,
         model: str,
-    ):
+    ) -> None:
         self.repository = repository
         self.generator = generator
         self.model = model
 
-    def create_plan(self, request: CampaignPlanRequest) -> CampaignPlanResponse:
+    async def create_plan(self, request: CampaignPlanRequest) -> CampaignPlanResponse:
+        # Idempotency: return the completed plan if already generated
         completed = self.repository.find_completed(request.workspace_id, request.request_key)
         if completed:
             return completed
 
         run_id = self.repository.start(request, self.model)
         try:
-            generated = self.generator.generate(request)
+            generated = await self.generator.generate(request)
             result = CampaignPlanResponse(
                 ai_run_id=run_id,
                 approval_required=True,
@@ -138,3 +228,12 @@ class CampaignPlanService:
                 "Campaign planning did not complete. Review the inputs and try again.",
             )
             raise
+
+
+def make_campaign_plan_service(database_uri: str, model: str) -> CampaignPlanService:
+    """Factory — called once at startup via get_campaign_plan_service()."""
+    return CampaignPlanService(
+        repository=PostgresAiRunRepository(database_uri),
+        generator=AgentsCampaignPlanGenerator(),
+        model=model,
+    )

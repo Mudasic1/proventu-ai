@@ -1,6 +1,7 @@
-"""Tests for the Antigravity-agent-based system (guardrails, setup, tools, rag)."""
+"""Tests for the OpenAI Agents SDK-based guardrails and agent setup."""
 
-from app.agents.guardrails import scan_campaign_plan, scan_text
+
+from app.agents.guardrails.output import scan_campaign_plan, scan_text
 from app.agents.setup import (
     CAMPAIGN_AGENT_INSTRUCTIONS,
     CHAT_AGENT_INSTRUCTIONS,
@@ -38,7 +39,10 @@ def test_scan_campaign_plan_checks_social_posts():
         summary="A focused plan",
         recommended_angle="Make it easy",
         social_posts=[
-            SocialPostDraft(platform="linkedin", content="Don't miss out on this limited time event!"),
+            SocialPostDraft(
+                platform="linkedin",
+                content="Don't miss out on this limited time event!",
+            ),
         ],
         email_drafts=[
             EmailDraft(name="test", subject="Hi", preview_text="Hello", body="Check it out."),
@@ -72,52 +76,49 @@ def test_scan_campaign_plan_checks_email_body():
     assert any(f.code == "unsupported_guarantee" for f in findings)
 
 
-def test_build_agent_config_has_system_instructions():
+def test_build_agent_config_returns_model_and_instructions():
+    """build_agent_config now returns a plain dict (shim for SDK-based agents)."""
     config = build_agent_config(CAMPAIGN_AGENT_INSTRUCTIONS)
-    assert config.system_instructions is not None
-    assert len(config.system_instructions) > 0
-
-
-def test_build_agent_config_has_tools():
-    config = build_agent_config(CHAT_AGENT_INSTRUCTIONS)
-    assert config.tools is not None
-    assert len(config.tools) == 6
+    assert isinstance(config, dict)
+    assert "model" in config
+    assert "instructions" in config
+    assert len(config["instructions"]) > 0
 
 
 def test_agent_instructions_are_distinct():
-    assert CAMPAIGN_AGENT_INSTRUCTIONS is not CHAT_AGENT_INSTRUCTIONS
-    assert SALES_AGENT_INSTRUCTIONS is not CHAT_AGENT_INSTRUCTIONS
+    assert CAMPAIGN_AGENT_INSTRUCTIONS != CHAT_AGENT_INSTRUCTIONS
+    assert SALES_AGENT_INSTRUCTIONS != CHAT_AGENT_INSTRUCTIONS
 
 
-def test_rag_index_delete_roundtrip():
-    from app.agents import rag as rag_mod
+def test_supervisor_has_all_specialists():
+    """Supervisor agent should have exactly 8 specialist tools."""
+    from app.agents.supervisor import get_supervisor_agent
+    sup = get_supervisor_agent()
+    assert sup.name == "Supervisor"
+    tool_names = {t.name for t in sup.tools}
+    expected = {
+        "call_strategy_agent",
+        "call_content_agent",
+        "call_email_agent",
+        "call_crm_agent",
+        "call_sales_agent",
+        "call_research_agent",
+        "call_analytics_agent",
+        "call_compliance_agent",
+    }
+    assert tool_names == expected
 
-    stored_client = rag_mod._client
-    rag_mod._client = None
 
-    from qdrant_client import QdrantClient
-    import tempfile
+def test_supervisor_has_guardrails():
+    from app.agents.supervisor import get_supervisor_agent
+    sup = get_supervisor_agent()
+    assert len(sup.input_guardrails) == 1
+    assert len(sup.output_guardrails) == 1
 
-    tmp = tempfile.mkdtemp()
-    custom_path = tmp + "\\.qdrant_data"
-    rag_mod._client = QdrantClient(path=custom_path)
-    rag_mod._ensure_collection(rag_mod._client)
 
-    rag_mod.index_document(
-        "rag_test_1", "Test doc about sales strategy.",
-        {"source": "unittest"}, [0.1] * 768,
-    )
-    rag_mod.index_document(
-        "rag_test_2", "Test doc about email marketing.",
-        {"source": "unittest"}, [0.2] * 768,
-    )
-
-    results = rag_mod.search_knowledge([0.1] * 768, limit=5)
-    assert any(r["doc_id"] == "rag_test_1" for r in results)
-
-    rag_mod.delete_document("rag_test_1")
-    results_after = rag_mod.search_knowledge([0.1] * 768, limit=5)
-    assert not any(r["doc_id"] == "rag_test_1" for r in results_after)
-
-    rag_mod._client.close()
-    rag_mod._client = stored_client
+def test_mcp_server_exposes_crm_tools():
+    from app.agents.mcp.server import mcp
+    tool_names = {t.name for t in mcp._tool_manager.list_tools()}
+    assert "search_contacts" in tool_names
+    assert "get_pipeline_metrics" in tool_names
+    assert "list_deals" in tool_names

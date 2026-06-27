@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type Theme = "dark" | "light";
 
@@ -13,7 +14,12 @@ function applyTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
 }
 
-export function ThemeToggle() {
+type ThemeToggleProps = {
+  /** When true renders icon-only (no label text). Used in collapsed sidebar. */
+  iconOnly?: boolean;
+};
+
+export function ThemeToggle({ iconOnly = false }: ThemeToggleProps) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === "undefined") return "light";
     const stored = window.localStorage.getItem("proventu-ai-theme");
@@ -41,10 +47,19 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       aria-label={`Switch to ${isDark ? "light" : "dark"} theme`}
       title={`Switch to ${isDark ? "light" : "dark"} theme`}
-      className="w-full justify-start rounded-lg border-white/10 bg-white/[0.045] px-3 text-xs font-bold text-[var(--dashboard-sidebar-muted)] hover:bg-[var(--dashboard-sidebar-hover)] hover:text-[var(--dashboard-sidebar-fg)]"
+      className={cn(
+        "rounded-lg border-white/10 bg-white/[0.045] text-xs font-bold",
+        "text-[var(--dashboard-sidebar-muted)] hover:bg-[var(--dashboard-sidebar-hover)]",
+        "hover:text-[var(--dashboard-sidebar-fg)] transition-colors",
+        iconOnly ? "w-9 justify-center px-0" : "w-full justify-start px-3",
+      )}
     >
-      {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
-      <span>{isDark ? "Light mode" : "Dark mode"}</span>
+      {isDark ? (
+        <Sun className="size-4 shrink-0" />
+      ) : (
+        <Moon className="size-4 shrink-0" />
+      )}
+      {!iconOnly && <span>{isDark ? "Light mode" : "Dark mode"}</span>}
     </Button>
   );
 }
