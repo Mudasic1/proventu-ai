@@ -1,0 +1,37 @@
+# Vercel deployment exclusions
+
+# Virtual environments
+.venv
+venv
+
+# Python cache
+__pycache__
+*.pyc
+.pytest_cache
+.ruff_cache
+
+# Tests
+tests
+
+# Database migrations (applied at runtime, not bundled)
+migrations
+
+# Coverage and logs
+coverage
+*.log
+
+# Environment files (secrets set via Vercel dashboard)
+.env
+.env.*
+!.env.example
+
+# Docker (not needed for Vercel serverless)
+Dockerfile
+.dockerignore
+
+# Documentation
+README.md
+
+# Git
+.git
+.gitignore

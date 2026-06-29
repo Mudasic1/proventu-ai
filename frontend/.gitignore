@@ -47,3 +47,4 @@ vitest.config.ts
 
 # scripts
 /scripts
+.vercel
