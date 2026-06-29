@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { ContactActionState } from "@/server/actions/contacts";
 
@@ -70,17 +71,7 @@ export function ContactForm({ action, defaults, mode = "create" }: ContactFormPr
         </div>
         <div className="grid gap-2">
           <Label htmlFor="status">Status</Label>
-          <select
-            id="status"
-            name="status"
-            defaultValue={defaults?.status ?? "lead"}
-            className="h-11 rounded-xl border border-white/[0.11] bg-[#10211c] px-3 text-sm"
-          >
-            <option value="lead">Lead</option>
-            <option value="qualified">Qualified</option>
-            <option value="customer">Customer</option>
-            <option value="inactive">Inactive</option>
-          </select>
+          <Select id="status" name="status" defaultValue={defaults?.status ?? "lead"} options={[{ value: "lead", label: "Lead" }, { value: "qualified", label: "Qualified" }, { value: "customer", label: "Customer" }, { value: "inactive", label: "Inactive" }]} />
         </div>
       </div>
       <div className="grid gap-2">
@@ -99,7 +90,7 @@ export function ContactForm({ action, defaults, mode = "create" }: ContactFormPr
       ) : null}
       <Button
         type="submit"
-        className="h-11 rounded-full bg-[#d8ff62] px-5 font-bold text-[#10211c] hover:bg-[#e5ff92]"
+        className="h-11 rounded-full bg-[var(--dashboard-accent)] px-5 font-bold text-[var(--dashboard-accent-foreground)] hover:bg-[var(--dashboard-accent-hover)]"
         disabled={pending}
       >
         {pending ? <LoaderCircle className="size-4 animate-spin" /> : mode === "create" ? <UserPlus /> : <Save />}

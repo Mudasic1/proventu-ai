@@ -2,10 +2,12 @@ import "server-only";
 
 import { and, eq } from "drizzle-orm";
 
+import { parseLocalToUtc } from "@/lib/date-utils";
 import { db } from "@/lib/db";
 import {
   automation,
   automationAction,
+  automationCondition,
   automationTrigger,
   campaign,
   company,
@@ -33,6 +35,7 @@ import type {
   workspaceSettingsSchema,
 } from "@/lib/validations/workspace-modules";
 import { recordActivity } from "@/server/mutations/activity";
+import { getWorkspaceSettings } from "@/server/queries/workspace-modules";
 import type { z } from "zod";
 
 type MutationContext = { workspaceId: string; userId: string };
@@ -140,6 +143,10 @@ export async function createCampaign(context: MutationContext, input: CampaignIn
 
 export async function createSocialPost(context: MutationContext, input: SocialPostInput) {
   await requireWorkspaceCampaign(context.workspaceId, input.campaignId);
+  const settings = await getWorkspaceSettings(context.workspaceId);
+  const tz = settings?.timezone || "UTC";
+  const scheduledDate = input.scheduledAt ? parseLocalToUtc(input.scheduledAt, tz) : null;
+
   const socialPostId = id();
   await db.insert(socialPost).values({
     id: socialPostId,
@@ -149,7 +156,7 @@ export async function createSocialPost(context: MutationContext, input: SocialPo
     platform: input.platform,
     content: input.content,
     status: input.status,
-    scheduledAt: optionalDate(input.scheduledAt),
+    scheduledAt: scheduledDate,
   });
   await logCreated(context, "social_post", socialPostId, `${input.platform} post saved`);
   return socialPostId;
@@ -160,6 +167,10 @@ export async function createEmailCampaign(
   input: EmailCampaignInput,
 ) {
   await requireWorkspaceCampaign(context.workspaceId, input.campaignId);
+  const settings = await getWorkspaceSettings(context.workspaceId);
+  const tz = settings?.timezone || "UTC";
+  const scheduledDate = input.scheduledAt ? parseLocalToUtc(input.scheduledAt, tz) : null;
+
   const emailCampaignId = id();
   await db.insert(emailCampaign).values({
     id: emailCampaignId,
@@ -171,7 +182,7 @@ export async function createEmailCampaign(
     previewText: input.previewText,
     body: input.body,
     status: input.status,
-    scheduledAt: optionalDate(input.scheduledAt),
+    scheduledAt: scheduledDate,
   });
   await logCreated(context, "email_campaign", emailCampaignId, `${input.name} email draft saved`);
   return emailCampaignId;
@@ -231,7 +242,7 @@ export async function createAutomation(context: MutationContext, input: Automati
     createdByUserId: context.userId,
     name: input.name,
     description: input.description,
-    status: input.status,
+    status: input.status ?? "draft",
   });
   await db.insert(automationTrigger).values({
     id: id(),
@@ -244,9 +255,84 @@ export async function createAutomation(context: MutationContext, input: Automati
     workspaceId: context.workspaceId,
     automationId,
     type: input.actionType,
+    position: 0,
   });
   await logCreated(context, "automation", automationId, `${input.name} rule created`);
   return automationId;
+}
+
+export async function updateAutomation(
+  context: MutationContext,
+  automationId: string,
+  input: AutomationInput & { triggerConfig?: Record<string, string>; conditions?: { field: string; operator: string; value: string }[] },
+) {
+  const [existing] = await db
+    .select({ id: automation.id })
+    .from(automation)
+    .where(and(eq(automation.id, automationId), eq(automation.workspaceId, context.workspaceId)))
+    .limit(1);
+  if (!existing) throw new AppError("NOT_FOUND", "Automation not found.");
+
+  await db
+    .update(automation)
+    .set({ name: input.name, description: input.description, status: input.status ?? "draft" })
+    .where(eq(automation.id, automationId));
+
+  if (input.triggerType) {
+    const [trigger] = await db
+      .select({ id: automationTrigger.id })
+      .from(automationTrigger)
+      .where(eq(automationTrigger.automationId, automationId))
+      .limit(1);
+    if (trigger) {
+      await db
+        .update(automationTrigger)
+        .set({ type: input.triggerType, config: input.triggerConfig ?? {} })
+        .where(eq(automationTrigger.id, trigger.id));
+    } else {
+      await db.insert(automationTrigger).values({
+        id: id(), workspaceId: context.workspaceId, automationId,
+        type: input.triggerType, config: input.triggerConfig ?? {},
+      });
+    }
+  }
+
+  if (input.conditions) {
+    await db.delete(automationCondition).where(eq(automationCondition.automationId, automationId));
+    if (input.conditions.length > 0) {
+      await db.insert(automationCondition).values(
+        input.conditions.map((c, i) => ({
+          id: id(), workspaceId: context.workspaceId, automationId,
+          field: c.field, operator: c.operator, value: c.value, position: i,
+        })),
+      );
+    }
+  }
+
+  if (input.actionType) {
+    const [action] = await db
+      .select({ id: automationAction.id })
+      .from(automationAction)
+      .where(eq(automationAction.automationId, automationId))
+      .limit(1);
+    if (action) {
+      await db
+        .update(automationAction)
+        .set({ type: input.actionType, position: 0 })
+        .where(eq(automationAction.id, action.id));
+    } else {
+      await db.insert(automationAction).values({
+        id: id(), workspaceId: context.workspaceId, automationId,
+        type: input.actionType, position: 0,
+      });
+    }
+  }
+
+  await recordActivity({
+    ...context, actorUserId: context.userId,
+    entityType: "automation", entityId: automationId,
+    action: "automation.updated", summary: `${input.name} rule updated`,
+  });
 }
 
 export async function saveWorkspaceSettings(

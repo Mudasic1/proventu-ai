@@ -1,0 +1,19 @@
+# Production dependencies for SalesEasy AI Backend
+# Vercel uses this file to install dependencies.
+# Generated from pyproject.toml; run `pip freeze > requirements.lock` for pinned versions.
+
+fastapi>=0.136.0
+psycopg[binary]>=3.2.0
+pydantic>=2.10.0
+pydantic-settings>=2.7.0
+uvicorn>=0.34.0
+sqlmodel>=0.0.22
+sqlalchemy>=2.0.0
+openai-agents>=0.17.0
+openai>=1.84.0
+mcp>=1.9.0
+httpx>=0.28.0
+sse-starlette>=2.0.0
+python-multipart>=0.0.9
+python-dotenv>=1.0.0
+tenacity>=8.0.0

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, desc, eq, ilike, isNull, or } from "drizzle-orm";
+import { and, desc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import { activityEntry, contact } from "@/lib/db/schema";
@@ -9,6 +9,12 @@ import { normalizeEmail, normalizePhone } from "@/lib/validations/contacts";
 type ContactFilters = {
   query?: string;
   status?: string;
+  ownerUserId?: string;
+};
+
+type ContactActivityFilters = {
+  contactId?: string;
+  type?: "note" | "call" | "meeting" | "email" | "sms" | "all";
   ownerUserId?: string;
 };
 
@@ -68,6 +74,75 @@ export async function getContactActivity(workspaceId: string, contactId: string)
     )
     .orderBy(desc(activityEntry.createdAt))
     .limit(50);
+}
+
+export async function listContactActivities(
+  workspaceId: string,
+  filters: ContactActivityFilters = {},
+) {
+  return db
+    .select({
+      id: activityEntry.id,
+      summary: activityEntry.summary,
+      action: activityEntry.action,
+      metadata: activityEntry.metadata,
+      createdAt: activityEntry.createdAt,
+      contactId: contact.id,
+      contactFirstName: contact.firstName,
+      contactLastName: contact.lastName,
+      contactEmail: contact.email,
+      companyName: contact.companyName,
+    })
+    .from(activityEntry)
+    .innerJoin(contact, eq(activityEntry.entityId, contact.id))
+    .where(
+      and(
+        eq(activityEntry.workspaceId, workspaceId),
+        eq(activityEntry.entityType, "contact"),
+        eq(contact.workspaceId, workspaceId),
+        isNull(contact.removedAt),
+        filters.ownerUserId ? eq(contact.ownerUserId, filters.ownerUserId) : undefined,
+        filters.contactId && filters.contactId !== "all"
+          ? eq(contact.id, filters.contactId)
+          : undefined,
+        filters.type && filters.type !== "all"
+          ? sql`${activityEntry.metadata}->>'type' = ${filters.type}`
+          : undefined,
+      ),
+    )
+    .orderBy(desc(activityEntry.createdAt))
+    .limit(100);
+}
+
+export async function listContactAppointments(workspaceId: string, ownerUserId?: string) {
+  return db
+    .select({
+      id: activityEntry.id,
+      summary: activityEntry.summary,
+      action: activityEntry.action,
+      metadata: activityEntry.metadata,
+      createdAt: activityEntry.createdAt,
+      contactId: contact.id,
+      contactFirstName: contact.firstName,
+      contactLastName: contact.lastName,
+      contactEmail: contact.email,
+      companyName: contact.companyName,
+    })
+    .from(activityEntry)
+    .innerJoin(contact, eq(activityEntry.entityId, contact.id))
+    .where(
+      and(
+        eq(activityEntry.workspaceId, workspaceId),
+        eq(activityEntry.entityType, "contact"),
+        eq(contact.workspaceId, workspaceId),
+        isNull(contact.removedAt),
+        ownerUserId ? eq(contact.ownerUserId, ownerUserId) : undefined,
+        sql`${activityEntry.metadata}->>'type' = 'meeting'`,
+        sql`${activityEntry.metadata}->>'scheduledAt' is not null`,
+      ),
+    )
+    .orderBy(sql`(${activityEntry.metadata}->>'scheduledAt')::timestamptz asc`)
+    .limit(100);
 }
 
 export async function findDuplicateContact(

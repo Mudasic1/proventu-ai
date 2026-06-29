@@ -25,23 +25,87 @@ export const campaignSchema = z.object({
   endsAt: optionalDate,
 });
 
-export const socialPostSchema = z.object({
-  campaignId: z.string().trim().optional().default(""),
-  platform: z.enum(["linkedin", "facebook", "instagram", "x", "other"]).default("linkedin"),
-  content: z.string().trim().min(1, "Post content is required.").max(5_000),
-  status: z.enum(["draft", "scheduled", "published", "cancelled"]).default("draft"),
-  scheduledAt: optionalDate,
-});
+export const socialPostSchema = z
+  .object({
+    campaignId: z.string().trim().optional().default(""),
+    platform: z.enum(["linkedin", "facebook", "instagram", "x", "other"]).default("linkedin"),
+    content: z.string().trim().min(1, "Post content is required.").max(5_000),
+    status: z.enum(["draft", "scheduled", "published", "cancelled"]).default("draft"),
+    scheduledAt: optionalDate,
+  })
+  .superRefine((value, context) => {
+    if (value.scheduledAt) {
+      const parsedDate = new Date(value.scheduledAt);
+      if (Number.isNaN(parsedDate.getTime())) {
+        context.addIssue({
+          code: "custom",
+          message: "Enter a valid date and time.",
+          path: ["scheduledAt"],
+        });
+      }
+    }
 
-export const emailCampaignSchema = z.object({
-  campaignId: z.string().trim().optional().default(""),
-  name: z.string().trim().min(1, "Email campaign name is required.").max(160),
-  subject: z.string().trim().min(1, "Subject is required.").max(240),
-  previewText: z.string().trim().max(320).optional().default(""),
-  body: z.string().trim().min(1, "Email body is required.").max(20_000),
-  status: z.enum(["draft", "scheduled", "sent", "cancelled"]).default("draft"),
-  scheduledAt: optionalDate,
-});
+    if (value.status === "scheduled") {
+      if (!value.scheduledAt) {
+        context.addIssue({
+          code: "custom",
+          message: "Choose a scheduled publication time.",
+          path: ["scheduledAt"],
+        });
+      } else {
+        const parsedDate = new Date(value.scheduledAt);
+        if (!Number.isNaN(parsedDate.getTime()) && parsedDate.getTime() <= Date.now()) {
+          context.addIssue({
+            code: "custom",
+            message: "Scheduled time must be in the future.",
+            path: ["scheduledAt"],
+          });
+        }
+      }
+    }
+  });
+
+export const emailCampaignSchema = z
+  .object({
+    campaignId: z.string().trim().optional().default(""),
+    name: z.string().trim().min(1, "Email campaign name is required.").max(160),
+    subject: z.string().trim().min(1, "Subject is required.").max(240),
+    previewText: z.string().trim().max(320).optional().default(""),
+    body: z.string().trim().min(1, "Email body is required.").max(20_000),
+    status: z.enum(["draft", "scheduled", "sent", "cancelled"]).default("draft"),
+    scheduledAt: optionalDate,
+  })
+  .superRefine((value, context) => {
+    if (value.scheduledAt) {
+      const parsedDate = new Date(value.scheduledAt);
+      if (Number.isNaN(parsedDate.getTime())) {
+        context.addIssue({
+          code: "custom",
+          message: "Enter a valid date and time.",
+          path: ["scheduledAt"],
+        });
+      }
+    }
+
+    if (value.status === "scheduled") {
+      if (!value.scheduledAt) {
+        context.addIssue({
+          code: "custom",
+          message: "Choose a scheduled sending time.",
+          path: ["scheduledAt"],
+        });
+      } else {
+        const parsedDate = new Date(value.scheduledAt);
+        if (!Number.isNaN(parsedDate.getTime()) && parsedDate.getTime() <= Date.now()) {
+          context.addIssue({
+            code: "custom",
+            message: "Scheduled time must be in the future.",
+            path: ["scheduledAt"],
+          });
+        }
+      }
+    }
+  });
 
 export const emailSequenceSchema = z.object({
   campaignId: z.string().trim().optional().default(""),

@@ -72,7 +72,7 @@ export function DealForm({ contacts, stages }: DealFormProps) {
         <Label htmlFor="notes">Notes</Label>
         <Textarea id="notes" name="notes" placeholder="Commercial context and next step" />
       </div>
-      <Button className="h-11 rounded-full bg-[#d8ff62] px-5 font-bold text-[#10211c] hover:bg-[#e5ff92]" disabled={pending}>
+      <Button className="h-11 rounded-full bg-[var(--dashboard-accent)] px-5 font-bold text-[var(--dashboard-accent-foreground)] hover:bg-[var(--dashboard-accent-hover)]" disabled={pending}>
         {pending ? <LoaderCircle className="animate-spin" /> : <Plus />}
         {pending ? "Adding..." : "Add deal"}
       </Button>

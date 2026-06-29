@@ -29,32 +29,32 @@ export default async function DealPage({ params }: { params: Promise<{ dealId: s
   ]);
   return (
     <div className="grid gap-5">
-      <Link href="/sales/pipeline" className="flex items-center gap-1 text-xs font-bold uppercase tracking-[0.12em] text-[#d8ff62]"><ArrowLeft className="size-4" /> Pipeline</Link>
-      <section className="rounded-[24px] border border-white/[0.08] bg-white/[0.025] p-5">
-        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#82928c]">{record.status}</p>
-        <h1 className="mt-2 font-display text-5xl font-bold tracking-[-0.09em]">{record.title}</h1>
-        <div className="mt-5 grid gap-3 text-sm text-[#a8b6b1] sm:grid-cols-3">
-          <p><span className="block text-xs text-[#71817b]">Value</span>{formatCurrency(record.valueCents)}</p>
-          <p><span className="block text-xs text-[#71817b]">Contact</span>{[record.contactFirstName, record.contactLastName].filter(Boolean).join(" ") || "Unassigned"}</p>
-          <p><span className="block text-xs text-[#71817b]">Expected close</span>{formatDate(record.expectedCloseAt)}</p>
+      <Link href="/sales/pipeline" className="flex items-center gap-1 text-xs font-bold uppercase tracking-[0.12em] text-[var(--dashboard-accent)]"><ArrowLeft className="size-4" /> Pipeline</Link>
+      <section className="rounded-[24px] border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-5">
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[var(--dashboard-icon)]">{record.status}</p>
+        <h1 className="mt-2 font-display text-5xl font-bold tracking-wide">{record.title}</h1>
+        <div className="mt-5 grid gap-3 text-sm text-[var(--dashboard-muted)] sm:grid-cols-3">
+          <p><span className="block text-xs text-[var(--dashboard-icon)]">Value</span>{formatCurrency(record.valueCents)}</p>
+          <p><span className="block text-xs text-[var(--dashboard-icon)]">Contact</span>{[record.contactFirstName, record.contactLastName].filter(Boolean).join(" ") || "Unassigned"}</p>
+          <p><span className="block text-xs text-[var(--dashboard-icon)]">Expected close</span>{formatDate(record.expectedCloseAt)}</p>
         </div>
-        {record.notes ? <p className="mt-5 border-t border-white/[0.08] pt-4 text-sm leading-6 text-[#9eaea8]">{record.notes}</p> : null}
+        {record.notes ? <p className="mt-5 border-t border-[var(--dashboard-border)] pt-4 text-sm leading-6 text-[var(--dashboard-muted)]">{record.notes}</p> : null}
       </section>
       {canWriteDeals && record.status === "open" ? (
-        <section className="grid gap-4 rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-4 md:grid-cols-2">
+        <section className="grid gap-4 rounded-[22px] border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-4 md:grid-cols-2">
           <form action={closeDealAction.bind(null, dealId)}>
             <input type="hidden" name="outcome" value="won" />
-            <Button className="h-11 w-full rounded-full bg-[#d8ff62] font-bold text-[#10211c] hover:bg-[#e5ff92]"><Trophy /> Close as won</Button>
+            <Button className="h-11 w-full rounded-full bg-[var(--dashboard-accent)] font-bold text-[var(--dashboard-accent-foreground)] hover:bg-[var(--dashboard-accent-hover)]"><Trophy /> Close as won</Button>
           </form>
           <form action={closeDealAction.bind(null, dealId)} className="flex gap-2">
             <input type="hidden" name="outcome" value="lost" />
-            <input name="lostReason" required placeholder="Reason deal was lost" className="min-w-0 flex-1 rounded-xl border border-white/[0.11] bg-white/[0.055] px-3 text-sm" />
+            <input name="lostReason" required placeholder="Reason deal was lost" className="min-w-0 flex-1 rounded-xl border border-[var(--dashboard-border)] bg-[var(--dashboard-input)] px-3 text-sm" />
             <Button variant="destructive" className="h-11 rounded-full"><XCircle /> Close lost</Button>
           </form>
         </section>
       ) : null}
-      {canWriteTasks ? <details className="rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-4">
-        <summary className="cursor-pointer text-sm font-bold text-[#d8ff62]">Add a follow-up for this deal</summary>
+      {canWriteTasks ? <details className="rounded-[22px] border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-4">
+        <summary className="cursor-pointer text-sm font-bold text-[var(--dashboard-accent)]">Add a follow-up for this deal</summary>
         <div className="mt-4"><TaskForm contacts={contacts} deals={deals} defaultDealId={dealId} defaultContactId={record.contactId} /></div>
       </details> : null}
     </div>

@@ -48,7 +48,7 @@ export function TaskForm({ contacts, deals, defaultDealId, defaultContactId }: T
       <div className="grid gap-4 md:grid-cols-2">
         <div className="grid gap-2">
           <Label htmlFor="contactId">Contact</Label>
-          <select id="contactId" name="contactId" defaultValue={defaultContactId ?? ""} className="h-11 rounded-xl border border-white/[0.11] bg-[#10211c] px-3 text-sm">
+          <select id="contactId" name="contactId" defaultValue={defaultContactId ?? ""} className="h-11 rounded-xl border border-[var(--dashboard-border)] bg-[var(--dashboard-input)] px-3 text-sm">
             <option value="">Unassigned</option>
             {contacts.map((contact) => (
               <option key={contact.id} value={contact.id}>{contact.firstName} {contact.lastName}</option>
@@ -58,7 +58,7 @@ export function TaskForm({ contacts, deals, defaultDealId, defaultContactId }: T
         </div>
         <div className="grid gap-2">
           <Label htmlFor="dealId">Deal</Label>
-          <select id="dealId" name="dealId" defaultValue={defaultDealId ?? ""} className="h-11 rounded-xl border border-white/[0.11] bg-[#10211c] px-3 text-sm">
+          <select id="dealId" name="dealId" defaultValue={defaultDealId ?? ""} className="h-11 rounded-xl border border-[var(--dashboard-border)] bg-[var(--dashboard-input)] px-3 text-sm">
             <option value="">Unassigned</option>
             {deals.map((deal) => <option key={deal.id} value={deal.id}>{deal.title}</option>)}
           </select>
@@ -73,7 +73,7 @@ export function TaskForm({ contacts, deals, defaultDealId, defaultContactId }: T
         </div>
         <div className="grid gap-2">
           <Label htmlFor="priority">Priority</Label>
-          <select id="priority" name="priority" defaultValue="medium" className="h-11 rounded-xl border border-white/[0.11] bg-[#10211c] px-3 text-sm">
+          <select id="priority" name="priority" defaultValue="medium" className="h-11 rounded-xl border border-[var(--dashboard-border)] bg-[var(--dashboard-input)] px-3 text-sm">
             <option value="low">Low</option>
             <option value="medium">Medium</option>
             <option value="high">High</option>
@@ -86,7 +86,7 @@ export function TaskForm({ contacts, deals, defaultDealId, defaultContactId }: T
         <Textarea id="notes" name="notes" />
         <FieldError errors={state.fieldErrors} name="notes" />
       </div>
-      <Button className="h-11 rounded-full bg-[#d8ff62] px-5 font-bold text-[#10211c] hover:bg-[#e5ff92]" disabled={pending}>
+      <Button className="h-11 rounded-full bg-[var(--dashboard-accent)] px-5 font-bold text-[var(--dashboard-accent-foreground)] hover:bg-[var(--dashboard-accent-hover)]" disabled={pending}>
         {pending ? <LoaderCircle className="animate-spin" /> : <Plus />}
         {pending ? "Adding..." : "Add follow-up"}
       </Button>

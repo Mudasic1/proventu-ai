@@ -1,17 +1,18 @@
 import type { LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { Select } from "@/components/ui/select";
 import { updateWorkspaceRecordStatusAction } from "@/server/actions/workspace-modules";
 import type { WorkspaceRecordType } from "@/server/mutations/workspace-modules";
 
 export const fieldClassName =
-  "h-11 w-full rounded-xl border border-white/[0.11] bg-white/[0.055] px-3.5 text-sm text-[#f4f2ea] outline-none transition placeholder:text-[#71817b] focus:border-[#d8ff62]/60 focus:ring-3 focus:ring-[#d8ff62]/12";
+  "h-11 w-full rounded-xl border border-[var(--dashboard-border)] bg-[var(--dashboard-input)] px-3.5 text-sm text-[var(--dashboard-fg)] outline-none transition placeholder:text-[var(--dashboard-subtle)] focus:border-[var(--dashboard-accent-border)] focus:ring-3 focus:ring-[var(--dashboard-accent-soft)]";
 
 export const textAreaClassName =
-  "min-h-28 w-full rounded-xl border border-white/[0.11] bg-white/[0.055] px-3.5 py-3 text-sm text-[#f4f2ea] outline-none transition placeholder:text-[#71817b] focus:border-[#d8ff62]/60 focus:ring-3 focus:ring-[#d8ff62]/12";
+  "min-h-28 w-full rounded-xl border border-[var(--dashboard-border)] bg-[var(--dashboard-input)] px-3.5 py-3 text-sm text-[var(--dashboard-fg)] outline-none transition placeholder:text-[var(--dashboard-subtle)] focus:border-[var(--dashboard-accent-border)] focus:ring-3 focus:ring-[var(--dashboard-accent-soft)]";
 
 export const submitClassName =
-  "inline-flex h-11 items-center justify-center rounded-xl bg-[#d8ff62] px-4 text-xs font-extrabold uppercase tracking-[0.12em] text-[#10211c] transition hover:bg-[#e5ff92]";
+  "inline-flex h-11 items-center justify-center rounded-xl bg-[var(--dashboard-accent)] px-4 text-xs font-extrabold uppercase tracking-[0.12em] text-[var(--dashboard-accent-foreground)] shadow-[0_12px_28px_rgba(255,92,92,0.18)] transition hover:bg-[var(--dashboard-accent-hover)]";
 
 type PageHeaderProps = {
   kicker: string;
@@ -25,10 +26,10 @@ export function PageHeader({ kicker, title, description, actions }: PageHeaderPr
     <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
       <div>
         <p className="section-kicker">{kicker}</p>
-        <h1 className="mt-3 max-w-4xl font-display text-5xl font-bold leading-[0.9] tracking-[-0.09em]">
+        <h1 className="mt-3 max-w-4xl font-display text-5xl font-bold leading-[0.9] tracking-wide">
           {title}
         </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-6 text-[#9eaea8]">{description}</p>
+        <p className="mt-3 max-w-3xl text-sm leading-6 text-[var(--dashboard-muted)]">{description}</p>
       </div>
       {actions ? <div className="shrink-0">{actions}</div> : null}
     </div>
@@ -45,7 +46,7 @@ export function Panel({
   return (
     <section
       className={cn(
-        "rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-4 sm:p-5",
+        "rounded-2xl border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-4 shadow-[var(--dashboard-shadow)] backdrop-blur sm:p-5",
         className,
       )}
     >
@@ -66,13 +67,13 @@ export function MetricCard({
   detail?: string;
 }) {
   return (
-    <article className="rounded-[22px] border border-white/[0.08] bg-white/[0.025] p-4">
-      <Icon className="size-4 text-[#d8ff62]" />
-      <p className="mt-8 font-display text-4xl font-bold tracking-[-0.09em]">{value}</p>
-      <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#82928c]">
+    <article className="rounded-2xl border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-4 shadow-[var(--dashboard-shadow)] backdrop-blur">
+      <Icon className="size-4 text-[var(--dashboard-accent)]" />
+      <p className="mt-8 font-display text-4xl font-bold tracking-wide">{value}</p>
+      <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[var(--dashboard-soft)]">
         {label}
       </p>
-      {detail ? <p className="mt-2 text-xs text-[#71817b]">{detail}</p> : null}
+      {detail ? <p className="mt-2 text-xs text-[var(--dashboard-icon)]">{detail}</p> : null}
     </article>
   );
 }
@@ -85,16 +86,16 @@ export function EmptyState({
   description: string;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-white/[0.13] bg-[#0b1916]/70 px-5 py-10 text-center">
-      <p className="font-display text-xl font-bold tracking-[-0.06em]">{title}</p>
-      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#82928c]">{description}</p>
+    <div className="rounded-2xl border border-dashed border-[var(--dashboard-border)] bg-[var(--dashboard-control)] px-5 py-10 text-center shadow-[var(--dashboard-shadow)] backdrop-blur">
+      <p className="font-display text-xl font-bold tracking-wide">{title}</p>
+      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[var(--dashboard-soft)]">{description}</p>
     </div>
   );
 }
 
 export function StatusBadge({ value }: { value: string }) {
   return (
-    <span className="rounded-full border border-[#d8ff62]/20 bg-[#d8ff62]/8 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#d8ff62]">
+    <span className="rounded-full border border-[var(--dashboard-accent-border)] bg-[var(--dashboard-accent-soft)] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[var(--dashboard-accent)]">
       {value.replaceAll("_", " ")}
     </span>
   );
@@ -113,10 +114,13 @@ export function StatusControl({
 }) {
   return (
     <form action={updateWorkspaceRecordStatusAction.bind(null, entityType, entityId)} className="flex gap-2">
-      <select name="status" defaultValue={value} className="h-8 min-w-28 rounded-lg border border-white/[0.1] bg-[#10211c] px-2 text-[10px] font-bold uppercase tracking-[0.08em] text-[#d8ff62]">
-        {options.map((option) => <option key={option} value={option}>{option.replaceAll("_", " ")}</option>)}
-      </select>
-      <button className="rounded-lg border border-[#d8ff62]/25 px-2.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[#d8ff62]">
+      <Select
+        name="status"
+        defaultValue={value}
+        options={options.map((o) => ({ value: o, label: o.replaceAll("_", " ") }))}
+        className="h-8 min-w-28 rounded-lg px-2 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--dashboard-accent)]"
+      />
+      <button className="rounded-lg border border-[var(--dashboard-accent-border)] px-2.5 text-[10px] font-bold uppercase tracking-[0.08em] text-[var(--dashboard-accent)] transition hover:bg-[var(--dashboard-accent-soft)]">
         Save
       </button>
     </form>
@@ -133,9 +137,9 @@ export function RecordCard({
   children?: React.ReactNode;
 }) {
   return (
-    <article className="rounded-2xl border border-white/[0.07] bg-[#0b1916] p-4">
-      <h3 className="font-display text-xl font-bold tracking-[-0.06em]">{title}</h3>
-      {metadata ? <p className="mt-1 text-xs text-[#82928c]">{metadata}</p> : null}
+    <article className="rounded-2xl border border-[var(--dashboard-border)] bg-[var(--dashboard-control)] p-4 shadow-[var(--dashboard-shadow)] backdrop-blur">
+      <h3 className="font-display text-xl font-bold tracking-wide">{title}</h3>
+      {metadata ? <p className="mt-1 text-xs text-[var(--dashboard-soft)]">{metadata}</p> : null}
       {children ? <div className="mt-4">{children}</div> : null}
     </article>
   );

@@ -7,7 +7,7 @@
 
 ### Product Context
 
-The root `README.md` defines SalesEasyAI as an agentic sales and marketing workspace for small businesses and agencies. It already identifies:
+The root `README.md` defines Proventu AI as an agentic sales and marketing workspace for small businesses and agencies. It already identifies:
 
 - A workspace-oriented product model
 - A user dashboard with revenue priorities and activity
@@ -155,7 +155,7 @@ The specification uses these current Stripe recommendations:
 
 5. **Use the hosted customer portal for self-service billing**
    - Let owners manage supported payment-method, invoice, cancellation, and subscription actions through the billing portal.
-   - Keep internal wallet and credit-ledger behavior inside SalesEasyAI.
+   - Keep internal wallet and credit-ledger behavior inside Proventu AI.
 
 ### Primary Sources
 

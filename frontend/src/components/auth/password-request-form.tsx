@@ -38,13 +38,13 @@ export function PasswordRequestForm() {
   if (isSent) {
     return (
       <div className="grid gap-4">
-        <p className="rounded-xl border border-[#d8ff62]/18 bg-[#d8ff62]/7 px-3 py-3 text-sm leading-6 text-[#d7e2de]">
+        <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-3 text-sm leading-6 tracking-wide text-gray-700">
           If that address belongs to an account, a reset link is on its way.
           Check your inbox and follow the link within 30 minutes.
         </p>
         <Link
           href="/signin"
-          className="flex items-center justify-center gap-2 text-sm font-bold text-[#d8ff62] transition hover:text-[#e5ff92]"
+          className="flex items-center justify-center gap-2 text-sm font-bold tracking-wide text-red-500 transition hover:text-red-400"
         >
           <ArrowLeft className="size-4" />
           Return to login
@@ -56,7 +56,7 @@ export function PasswordRequestForm() {
   return (
     <form className="grid gap-4" onSubmit={handleSubmit}>
       <div className="grid gap-2">
-        <Label htmlFor="email">Account email</Label>
+        <Label htmlFor="email" className="tracking-wide">Account email</Label>
         <Input
           id="email"
           name="email"
@@ -70,7 +70,7 @@ export function PasswordRequestForm() {
       {error ? (
         <p
           role="alert"
-          className="rounded-xl border border-red-300/20 bg-red-300/8 px-3 py-2.5 text-sm text-red-100"
+          className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700"
         >
           {error}
         </p>
@@ -79,7 +79,7 @@ export function PasswordRequestForm() {
       <Button
         type="submit"
         size="lg"
-        className="h-11 rounded-full bg-[#d8ff62] px-5 font-bold text-[#10211c] hover:bg-[#e5ff92]"
+        className="h-11 rounded-full bg-gradient-to-r from-red-500 to-rose-500 px-5 font-bold text-white shadow-[0_10px_34px_rgba(255,92,92,0.25)] hover:from-red-400 hover:to-rose-400"
         disabled={isPending}
       >
         {isPending ? (
@@ -92,7 +92,7 @@ export function PasswordRequestForm() {
 
       <Link
         href="/signin"
-        className="flex items-center justify-center gap-2 text-sm font-bold text-[#b8c5c0] transition hover:text-[#d8ff62]"
+        className="flex items-center justify-center gap-2 text-sm font-bold tracking-wide text-gray-500 transition hover:text-red-500"
       >
         <ArrowLeft className="size-4" />
         Back to login

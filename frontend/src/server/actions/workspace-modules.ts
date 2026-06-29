@@ -17,6 +17,10 @@ import {
   updateTeamMemberRoleSchema,
   workspaceSettingsSchema,
 } from "@/lib/validations/workspace-modules";
+import { and, eq } from "drizzle-orm";
+
+import { db } from "@/lib/db";
+import { automation } from "@/lib/db/schema";
 import {
   addTeamMember,
   createAutomation,
@@ -26,6 +30,7 @@ import {
   createEmailSequence,
   createInboxConversation,
   createSocialPost,
+  updateAutomation,
   saveWorkspaceSettings,
   updateTeamMemberRole,
   updateWorkspaceRecordStatus,
@@ -97,6 +102,40 @@ export async function createAutomationAction(formData: FormData) {
   const context = await requirePermission("automations:write");
   await createAutomation(mutationContext(context), parse(automationSchema, formData));
   redirect("/automations?toast=automation-created");
+}
+
+export async function updateAutomationAction(formData: FormData) {
+  const context = await requirePermission("automations:write");
+  const automationId = formData.get("id") as string;
+  if (!automationId) throw new AppError("VALIDATION_ERROR", "Automation ID is required.");
+  let conditions: { field: string; operator: string; value: string }[] = [];
+  try {
+    const raw = formData.get("conditions");
+    if (raw && typeof raw === "string") conditions = JSON.parse(raw);
+  } catch { /* ignore invalid JSON */ }
+  let triggerConfig: Record<string, string> = {};
+  try {
+    const raw = formData.get("triggerConfig");
+    if (raw && typeof raw === "string") triggerConfig = JSON.parse(raw);
+  } catch { /* ignore invalid JSON */ }
+  await updateAutomation(
+    mutationContext(context),
+    automationId,
+    { ...parse(automationSchema, formData), triggerConfig, conditions },
+  );
+  revalidatePath(`/automations/${automationId}`);
+  redirect(`/automations/${automationId}?toast=automation-updated`);
+}
+
+export async function deleteAutomationAction(formData: FormData) {
+  const context = await requirePermission("automations:write");
+  const automationId = formData.get("id") as string;
+  if (!automationId) throw new AppError("VALIDATION_ERROR", "Automation ID is required.");
+  await db.delete(automation).where(
+    and(eq(automation.id, automationId), eq(automation.workspaceId, context.workspaceId)),
+  );
+  revalidatePath("/automations");
+  redirect("/automations?toast=automation-deleted");
 }
 
 export async function saveWorkspaceSettingsAction(formData: FormData) {

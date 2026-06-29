@@ -1,6 +1,3 @@
-def main():
-    print("Hello from backend-ai!")
+from app.api import app
 
-
-if __name__ == "__main__":
-    main()
+__all__ = ["app"]

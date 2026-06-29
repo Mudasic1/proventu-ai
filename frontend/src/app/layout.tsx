@@ -1,20 +1,21 @@
 import type { Metadata } from "next";
+import { Bebas_Neue, Outfit } from "next/font/google";
 import "./globals.css";
-import { Manrope, Syne } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 
-const manrope = Manrope({
+const bebasNeue = Bebas_Neue({
+  weight: "400",
   subsets: ["latin"],
-  variable: "--font-manrope",
+  variable: "--font-bebas-neue",
 });
 
-const syne = Syne({
+const outfit = Outfit({
   subsets: ["latin"],
-  variable: "--font-syne",
+  variable: "--font-outfit",
 });
 
 export const metadata: Metadata = {
-  title: "SalesEasy | Put Your Revenue Work in Motion",
+  title: "Proventu AI | Put Your Revenue Work in Motion",
   description:
     "Turn your offer and lead list into campaigns, clear priorities, and follow-ups your team can approve before the day gets busy.",
 };
@@ -28,7 +29,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`h-full antialiased ${manrope.variable} ${syne.variable}`}
+      className={`h-full antialiased ${bebasNeue.variable} ${outfit.variable}`}
     >
       <body className="min-h-full">
         {children}

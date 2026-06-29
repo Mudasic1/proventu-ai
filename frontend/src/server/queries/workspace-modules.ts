@@ -7,6 +7,7 @@ import {
   activityEntry,
   automation,
   automationAction,
+  automationCondition,
   automationTrigger,
   billingPlan,
   campaign,
@@ -133,6 +134,37 @@ export async function listAutomations(workspaceId: string) {
     .where(eq(automation.workspaceId, workspaceId))
     .orderBy(desc(automation.createdAt))
     .limit(100);
+}
+
+export async function getAutomation(workspaceId: string, automationId: string) {
+  const [record] = await db
+    .select({
+      id: automation.id,
+      name: automation.name,
+      description: automation.description,
+      status: automation.status,
+      createdAt: automation.createdAt,
+    })
+    .from(automation)
+    .where(and(eq(automation.id, automationId), eq(automation.workspaceId, workspaceId)))
+    .limit(1);
+  if (!record) return null;
+  const triggers = await db
+    .select()
+    .from(automationTrigger)
+    .where(eq(automationTrigger.automationId, automationId))
+    .orderBy(automationTrigger.id);
+  const conditions = await db
+    .select()
+    .from(automationCondition)
+    .where(eq(automationCondition.automationId, automationId))
+    .orderBy(asc(automationCondition.position));
+  const actions = await db
+    .select()
+    .from(automationAction)
+    .where(eq(automationAction.automationId, automationId))
+    .orderBy(asc(automationAction.position));
+  return { ...record, triggers, conditions, actions };
 }
 
 export async function listTeamMembers(workspaceId: string) {
